@@ -1,12 +1,8 @@
 package com.hearthappy.desktoplist
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.hearthappy.desktoplist.desktopview.DesktopListAdapter
 import com.hearthappy.desktoplist.desktopview.IDesktopList
 import kotlinx.android.synthetic.main.activity_main.*
@@ -18,8 +14,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        var style = 0
         btnAddPage.setOnClickListener {
-
+            ++style
+            if (style > 2) {
+                style = 0
+            }
+            when (style) {
+                1 -> {
+                    dlv.setAppStyle(true)
+                }
+                2 -> {
+                    dlv.setAppStyle(true, 8)
+                }
+                else -> {
+                    dlv.setAppStyle()
+                }
+            }
         }
 
 
@@ -48,8 +59,11 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun insetSources():DataModel{
-        return DataModel("https://alifei01.cfp.cn/creative/vcg/veer/1600water/veer-375427800.jpg","插入的")
+    private fun insetSources(): DataModel {
+        return DataModel(
+            "https://alifei01.cfp.cn/creative/vcg/veer/1600water/veer-375427800.jpg",
+            "插入的"
+        )
     }
 
 

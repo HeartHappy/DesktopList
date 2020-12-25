@@ -19,10 +19,4 @@ interface IItemViewInteractive {
         adapterPosition: Int,
         fragmentContent: FragmentContent
     )
-
-    /**
-     * 当前页面View移动时
-     */
-    fun moveView(fromPosition: Int, targetPosition: Int): Boolean
-
 }

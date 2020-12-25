@@ -7,6 +7,7 @@ import android.graphics.RectF
 import android.os.Handler
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -40,8 +41,11 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private var fromItemView: View? = null //选中的ItemView
     private var fromPagePosition = -1 //选中当前页面position（第几页）
     private var fromAdapterPosition = -1//选中当前页面适配的position（第几个item）
-    private var currentFragmentContent: Fragment? = null
     private var fromFragmentContent: FragmentContent? = null//选中ItemView来自的Fragment视图
+    private var currentFragmentContent: Fragment? = null
+    private var floatViewScrollState: Int = 0 //默认禁止状态
+    var gestureDetector: GestureDetector by Delegates.notNull()
+    private var appStyle: AppStyle by Delegates.notNull()
 
     //以下三个属性主要解决dispatchTouchEvent事件分发的X、Y与选中View存在偏移问题
     private var isFirstDispatch = false  //是否位按下时的第一次分发
@@ -85,7 +89,44 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         this.iDesktopList = iDesktopList
         this.totalPage = ComputerUtils.getAllPage(totalCount, defaultShowCount)
         initData()
+        initEvent()
         this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
+    }
+
+    fun setAppStyle() {
+        appStyle(false, false, 0)
+
+    }
+
+    fun setAppStyle(isCircle: Boolean) {
+        appStyle(isCircle, false, 0)
+    }
+
+    fun setAppStyle(isRoundedCorners: Boolean, radius: Int) {
+        appStyle(false, isRoundedCorners, radius)
+    }
+
+    private fun appStyle(isCircle: Boolean, isRoundedCorners: Boolean, radius: Int) {
+        if (appStyle.run {
+                this.isCircle = isCircle
+                this.isRoundedCorners = isRoundedCorners
+                this.radius = radius
+                true
+            }) {
+            Log.d(TAG, "appStyle: invalidate")
+            notifyPageSetChange()
+        }
+    }
+
+    private fun notifyPageSetChange() {
+        this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
+//        init(totalCount, spanCount, defaultShowCount, iDesktopList)
+    }
+
+
+    private fun initProperty() {
+        offscreenPageLimit = 2
+        appStyle = AppStyle()
     }
 
     private fun initData() {
@@ -97,57 +138,75 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
+    private fun initEvent() {
 
-    private fun initProperty() {
-        offscreenPageLimit = 2
+        gestureDetector =
+            GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onScroll(
+                    e1: MotionEvent?,
+                    e2: MotionEvent?,
+                    distanceX: Float,
+                    distanceY: Float
+                ): Boolean {
+                    val decorView = getDecorView()
+                    val moveFloatView = getFloatView(decorView)
+                    moveFloatView?.let { mfv ->
+                        e2?.let { it2 ->
+                            floatViewMove(mfv, it2)
+                            if (fromPagePosition != currentItem && fromPagePosition != -1) {
+                                //跨界面移动
+                                Log.d(
+                                    TAG,
+                                    "onScroll:跨界面移动 floatView拖拽移动至第${currentItem}页,原选中ItemView的页面是：$fromPagePosition,$distanceX,$distanceY"
+                                )
+                                return true
+                            } else {
+                                Log.d(TAG, "onScroll: 当前界面，继续分发")
+                            }
+                        }
+                    }
+                    return false
+                }
+            })
     }
 
-    // TODO: 2020/12/22 添加页面
-    fun addPage() {}
-
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.pointerCount == 2) {
-            return false
-        }
-        //跨界面移动事件
-        if (floatViewEvent(ev) && fromPagePosition != currentItem && fromPagePosition != -1) {
-            Log.d(
-                TAG,
-                "dispatchTouchEvent:跨界面移动 floatView拖拽移动至第${currentItem}页,原选中ItemView的页面是：$fromPagePosition"
-            )
-            return false
+
+
+        ev?.let {
+            if (it.pointerCount == 2) return false
+            when (it.action) {
+                MotionEvent.ACTION_MOVE -> {
+                    if (gestureDetector.onTouchEvent(it)) {
+                        Log.d(TAG, "dispatchTouchEvent: 处理移动事件，并且跨界面不分发")
+                        return false
+                    } else {
+                        return super.dispatchTouchEvent(ev)
+                    }
+                }
+                MotionEvent.ACTION_UP -> {
+                    val decorView = getDecorView()
+                    val moveFloatView = getFloatView(decorView)
+                    moveFloatView?.let { mfv ->
+                        floatViewUp(mfv, decorView)
+                        Log.d(TAG, "dispatchTouchEvent: 处理松开事件，存在浮动View，不分发")
+                        return false
+                    }
+                }
+                else -> {
+                    return super.dispatchTouchEvent(ev)
+                }
+            }
         }
         return super.dispatchTouchEvent(ev)
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        Log.d(TAG, "onTouchEvent: dispatchTouchEvent,${ev?.action}")
         if (fromPagePosition == currentItem && fromItemView != null) {
             return true
         }
         return super.onTouchEvent(ev)
-    }
-
-
-    /**
-     * 移动浮动View的事件
-     */
-    private fun floatViewEvent(ev: MotionEvent?): Boolean {
-        val decorView = getDecorView()
-        val moveFloatView = getFloatView(decorView)
-        moveFloatView?.let { mfv ->
-            ev?.let {
-                if (it.action == MotionEvent.ACTION_MOVE) {
-                    return floatViewMove(mfv, it)
-                } else if (it.action == MotionEvent.ACTION_UP) {
-                    return floatViewUp(mfv, decorView)
-                }
-            }
-        } ?: let {
-            return false
-        }
-        return false
     }
 
 
@@ -157,15 +216,16 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private fun floatViewUp(
         mfv: View,
         decorView: FrameLayout
-    ): Boolean {
+    ) {
         //删除临时View
         isFirstDispatch = false
-        findReplaceView(mfv)
+        val isReplaceSucceed = findReplaceView(mfv)
+//        Log.d(TAG, "floatViewUp: isReplaceSucceed:$isReplaceSucceed")
         //3、删除临时视图
         decorView.removeView(mfv)
-        Log.d(TAG, "floatViewUp--->remove float View")
+        fromItemView?.visibility = View.VISIBLE
+//        Log.d(TAG, "floatViewUp--->remove float View")
         fromItemView = null
-        return true
     }
 
 
@@ -180,8 +240,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         if (fromPagePosition == currentItem) {
             //1、如果是原位置，直接返回
             if (targetIndex == this.fromAdapterPosition) {
-                Log.d(TAG, "findReplaceView: 当前页，原位置释放")
-                return true
+//                Log.d(TAG, "findReplaceView: 当前页，原位置释放")
+                return false
             }
             //1、数据源位置改变
             targetFragment.replaceLocal(
@@ -193,26 +253,32 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             if (fromAdapterPosition < targetIndex) {
                 targetFragment.getAdapter()
                     .notifyItemRangeChanged(fromAdapterPosition, targetIndex)
-                Log.d(TAG, "findReplaceView:fromPosition: $fromAdapterPosition,targetIndex:$targetIndex")
+                /*Log.d(
+                    TAG,
+                    "findReplaceView:fromPosition: $fromAdapterPosition,targetIndex:$targetIndex"
+                )*/
             } else {
                 targetFragment.getAdapter()
                     .notifyItemRangeChanged(targetIndex, fromAdapterPosition)
-                Log.d(TAG, "findReplaceView: targetIndex:$targetIndex,fromPosition:$fromAdapterPosition")
+                /*Log.d(
+                    TAG,
+                    "findReplaceView: targetIndex:$targetIndex,fromPosition:$fromAdapterPosition"
+                )*/
             }
             //解决notifyItemRangeChanged对数据重新绑定有时失效问题
             postDelayed({
                 targetFragment.getAdapter().notifyDataChanged()
             }, 200)
 
-            Log.d(TAG, "findReplaceView: 当前页，则执行替换操作")
+//            Log.d(TAG, "findReplaceView: 当前页，则执行替换操作")
             return true
             //2、松开时，拖拽至其他页面，并且其他页面是满的。此时targetIndex=-1，
         } else if (targetIndex == -1) {
             Toast.makeText(context, "当前屏幕没有空间", Toast.LENGTH_SHORT).show()
             return false
             //3、松开时，跨界面
-        } else {
-            Log.d(TAG, "findReplaceView: 跨界面拖拽")
+        } else if (fromPagePosition != currentItem) {
+//            Log.d(TAG, "findReplaceView: 跨界面拖拽")
             val dataModel = desktopListData[fromPagePosition][this.fromAdapterPosition]
             targetFragment.getAdapter().inset(dataModel, targetIndex)
             //跨界面删除，由于页面被销毁了，所以需要修改为删除数据源
@@ -224,13 +290,15 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 }
             }
             return true
+        } else {
+            return false
         }
     }
 
     /**
      * 临时View拖拽移动
      */
-    private fun floatViewMove(mfv: View, it: MotionEvent): Boolean {
+    private fun floatViewMove(mfv: View, it: MotionEvent) {
         val layoutParams = FrameLayout.LayoutParams(mfv.width, mfv.height)
         fromItemViewRect?.let { smv ->
             //第一次分发时记录按下的位置x,y与当前位置的itemView偏移距离
@@ -246,7 +314,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 isSwitchViewPager(mfv)
             }
         }
-        return true
     }
 
 
@@ -257,36 +324,28 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         when {
             //上一页边界
             mfv.x < 0 && !isMessageSend -> {
-                Log.d(TAG, "isSwitchViewPager: 延迟发送切换上一页请求")
+//                Log.d(TAG, "isSwitchViewPager: 延迟发送切换上一页请求")
                 myHandler.sendEmptyMessageDelayed(ACTION_PREV_PAGE, 1000)
                 isMessageSend = true
             }
             //下一页边界
             (mfv.x + mfv.width) > width && !isMessageSend -> {
-                Log.d(TAG, "isSwitchViewPager: 延迟发送切换下一页请求")
+//                Log.d(TAG, "isSwitchViewPager: 延迟发送切换下一页请求")
                 myHandler.sendEmptyMessageDelayed(ACTION_PREV_NEXT, 1000)
                 isMessageSend = true
             }
             mfv.x > 0 && mfv.x + mfv.width < width && isMessageSend -> {
-                Log.d(TAG, "isSwitchViewPager: 删除延迟消息")
+//                Log.d(TAG, "isSwitchViewPager: 删除延迟消息")
                 myHandler.removeCallbacksAndMessages(null)
                 isMessageSend = false
             }
             else -> {
-                Log.d(
+                /*Log.d(
                     TAG,
                     "isSwitchViewPager: ${mfv.x},${mfv.width},$width,${(mfv.x + mfv.width) > width}"
-                )
+                )*/
             }
         }
-    }
-
-
-    /**
-     * 获取ItemView的index
-     */
-    private fun getIndex(): Int {
-        return fromAdapterPosition + fromPagePosition * defaultShowCount
     }
 
 
@@ -299,7 +358,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     ): Int {
         //1、确定释放位置
         val moveViewRect = ViewOperateUtils.findViewLocation(mfv)
-        Log.d(TAG, "findReplaceView--->moveViewRect: $moveViewRect")
+//        Log.d(TAG, "findReplaceView--->moveViewRect: $moveViewRect")
         val currentPageItemCount = fragmentContent.getRecyclerView().adapter?.itemCount
         currentPageItemCount?.let { cic ->
             if (cic == defaultShowCount && fromPagePosition != currentItem) {
@@ -317,23 +376,23 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     if (moveViewRect.intersect(targetViewRect)) {
                         if (i != fromAdapterPosition) {
                             targetIntersect = i
-                            Log.d(
+                            /*Log.d(
                                 TAG,
                                 "getTargetIndex:$i,目标相交,选中$fromAdapterPosition,${textView.text},mvr:$moveViewRect,target:$targetViewRect"
-                            )
+                            )*/
                         } else {
                             localIntersect = i
-                            Log.d(
+                            /*Log.d(
                                 TAG,
                                 "getTargetIndex:$i,原位置相交,选中$fromAdapterPosition,${textView.text},mvr:$moveViewRect,target:$targetViewRect"
-                            )
+                            )*/
                         }
-                    } else {
+                    }/* else {
                         Log.d(
                             TAG,
                             "getTargetIndex: $i,不相交,${textView.text},mvr:$moveViewRect,target:$targetViewRect"
-                        )
-                    }
+
+                    })*/
                 }
             }
             if (targetIntersect != -1) {
@@ -343,8 +402,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             }
             return cic
         }
-
-//        return currentItem * defaultShowCount + selectItemCount
         return 0
     }
 
@@ -374,6 +431,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 desktopListData[position],
                 iDesktopList,
                 spanCount,
+                appStyle,
                 object : IItemViewInteractive {
                     override fun selectViewRect(
                         rect: RectF?,
@@ -385,23 +443,11 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         fromAdapterPosition = adapterPosition
                         fromItemViewRect = rect
                         fromFragmentContent = fragmentContent
-                        Log.d(
+                        /*Log.d(
                             TAG,
                             "selectItemView:current page:${currentItem},接口返回： $selectView,选中position:$adapterPosition"
-                        )
+                        )*/
                         this@DesktopListView.fromItemView = selectView
-                    }
-
-                    override fun moveView(fromPosition: Int, targetPosition: Int): Boolean {
-                        if (fromPagePosition == currentItem) {
-                            val targetFragment =
-                                (adapter as DesktopAdapter).getInstantFragment() as FragmentContent
-                            Log.d(TAG, "moveView: $fromPosition,$targetPosition")
-                            targetFragment.getAdapter()
-                                .notifyItemMoved(fromPosition, targetPosition)
-                            return true
-                        }
-                        return false
                     }
                 })
         }
@@ -425,5 +471,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         private const val TAG = "DesktopListView"
         private const val ACTION_PREV_PAGE = 1
         private const val ACTION_PREV_NEXT = 2
+        const val SCROLL_STATE_IDLE = 0//浮动View禁止状态
+        const val SCROLL_STATE_MOVE = 1//浮动View移动状态
     }
 }

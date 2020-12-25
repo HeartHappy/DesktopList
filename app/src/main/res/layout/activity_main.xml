@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/frame_radius_violet"
-            android:text="增加页"
+            android:text="切换样式"
             android:textColor="#fff" />
     </androidx.appcompat.widget.Toolbar>
 

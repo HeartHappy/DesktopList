@@ -29,6 +29,7 @@ class FragmentContent(
     private val listData: MutableList<DataModel>,
     private val iDesktopList: IDesktopList,
     private val spanCount: Int,
+    private val appStyle: AppStyle,
     private val iItemViewInteractive: IItemViewInteractive
 ) :
     Fragment() {
@@ -46,14 +47,20 @@ class FragmentContent(
         val gridLayoutManager = GridLayoutManager(context, spanCount)
         rvDesktopList.layoutManager = gridLayoutManager
         //涉及数据绑定View的交给用户自定义
-        rvDesktopList.adapter = context?.let { DesktopListAdapter(it, listData, iDesktopList) }
+        rvDesktopList.adapter =
+            context?.let { DesktopListAdapter(it, listData, iDesktopList, appStyle) }
+        rvDesktopList.itemAnimator?.changeDuration = 0
         //绑定移动View
         val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
         itemTouchHelper.attachToRecyclerView(rvDesktopList)
         Log.d(TAG, "onViewCreated: $position")
+        rvDesktopList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                RecyclerView.SCROLL_STATE_IDLE
+            }
+        })
     }
-
-
 
 
     fun getAdapter(): DesktopListAdapter {
@@ -118,15 +125,15 @@ class FragmentContent(
             Log.d("FragmentContent", "onMove: ")
 
             //得到当拖拽的viewHolder的Position
-            /*val fromPosition = viewHolder.adapterPosition
+            val fromPosition = viewHolder.adapterPosition
             //拿到当前拖拽到的item的viewHolder
             val toPosition = target.adapterPosition
-            replaceLocal(fromPosition, toPosition, listData)
+//            replaceLocal(fromPosition, toPosition, listData)
             // TODO: 2020/12/24 增加移动动画
             rvDesktopList?.adapter?.run {
                 notifyItemMoved(fromPosition, toPosition)
-            }*/
-            return  iItemViewInteractive.moveView(viewHolder.adapterPosition,target.adapterPosition)
+            }
+            return true
         }
 
 
@@ -153,7 +160,7 @@ class FragmentContent(
                 viewHolder?.let { vh ->
                     vh.itemView.let { iv ->
                         //隐藏原有视图
-//                        iv.visibility = View.INVISIBLE
+                        iv.visibility = View.INVISIBLE
                         val frameLayout = getDecorView()
                         //将原ImageView属性copy
                         val linearLayout = iv as LinearLayout
@@ -178,7 +185,12 @@ class FragmentContent(
                         )
                         //添加DecorView到视图
                         frameLayout?.addView(tempImageView, layoutParams)
-                        iItemViewInteractive.selectViewRect(moveViewRect, iv, vh.adapterPosition,this@FragmentContent)
+                        iItemViewInteractive.selectViewRect(
+                            moveViewRect,
+                            iv,
+                            vh.adapterPosition,
+                            this@FragmentContent
+                        )
                         tempImageView.animate().scaleX(1.4f).scaleY(1.4f).start()
                         Log.d(
                             "FragmentContent",
@@ -186,7 +198,6 @@ class FragmentContent(
                         )
                     }
                 }
-
             }
             super.onSelectedChanged(viewHolder, actionState)
         }
@@ -212,10 +223,6 @@ class FragmentContent(
         }
     }
 
-
-    private fun getTempView(frameLayout: FrameLayout?): View? {
-        return frameLayout?.findViewById(R.id.createView)
-    }
 
     private fun getDecorView(): FrameLayout? {
         activity?.window?.decorView?.let {

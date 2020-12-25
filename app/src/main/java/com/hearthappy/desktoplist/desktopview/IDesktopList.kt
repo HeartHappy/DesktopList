@@ -33,5 +33,6 @@ interface IDesktopList {
     /**
      * 手势触摸View移动时是否越界，true代表越界，下面参数代表是否左侧越界或右侧越界
      */
-    fun viewMoveBounds(leftBorder: Boolean, rightBorder: Boolean,moveView:View)
+    fun viewMoveBounds(leftBorder: Boolean, rightBorder: Boolean, moveView: View)
+
 }

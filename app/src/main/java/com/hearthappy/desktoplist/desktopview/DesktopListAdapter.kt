@@ -9,8 +9,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.hearthappy.desktoplist.DataModel
 import com.hearthappy.desktoplist.R
+
 
 /**
  * Created Date 2020/12/21.
@@ -20,7 +24,8 @@ import com.hearthappy.desktoplist.R
 class DesktopListAdapter(
     private val context: Context,
     private val listData: MutableList<DataModel>,
-    private val iDesktopList: IDesktopList
+    private val iDesktopList: IDesktopList,
+    private val appStyle: AppStyle
 ) :
     RecyclerView.Adapter<DesktopListAdapter.ViewHolder>() {
 
@@ -37,9 +42,23 @@ class DesktopListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 //        iDesktopList.onBindViewHolder(holder, position, listData)
 
+        //设置图片圆角角度
+        //通过RequestOptions扩展功能,override:采样率,因为ImageView就这么大,可以压缩图片,降低内存消耗
         Glide.with(context).load(listData[position].url)
             .placeholder(R.mipmap.ic_launcher)
             .error(android.R.drawable.ic_menu_report_image)
+            .apply {
+                if (appStyle.isCircle) {
+                    apply(RequestOptions.circleCropTransform())
+                } else if (appStyle.isRoundedCorners) {
+                    apply(
+                        RequestOptions()
+                            .transforms(
+                                CenterCrop(), RoundedCorners(appStyle.radius)
+                            )
+                    )
+                }
+            }
             .into(holder.itemView.findViewById(R.id.ivAppIcon))
         val textView = holder.itemView.findViewById(R.id.tvAppName) as TextView
 
@@ -96,7 +115,7 @@ class DesktopListAdapter(
         notifyItemRangeRemoved(position, itemCount)
     }
 
-    fun notifyDataChanged(){
+    fun notifyDataChanged() {
         notifyDataSetChanged()
     }
 
