@@ -1,6 +1,7 @@
 package com.hearthappy.desktoplist
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
 
         //初始化数据集
         val dataSources = initDataSources()
-        dlv.init(dataSources.size, 3, 18, object : IDesktopList {
+        dlv.init(dataSources.size, 3, 15, object : IDesktopList {
             override fun dataSources(): MutableList<DataModel> {
                 return dataSources
             }
@@ -38,25 +39,17 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 listData: MutableList<DataModel>
             ) {
-                Glide.with(this@MainActivity).load(listData[position].url)
-                    .placeholder(R.mipmap.ic_launcher)
-                    .error(android.R.drawable.ic_menu_report_image)
-                    .into(holder.itemView.findViewById(R.id.ivAppIcon))
-                val textView = holder.itemView.findViewById(R.id.tvAppName) as TextView
-                textView.text = listData[position].appName
-                holder.itemView.setOnClickListener {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "${listData[position].appName},position:$position",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+
             }
 
             override fun viewMoveBounds(leftBorder: Boolean, rightBorder: Boolean, moveView: View) {
 
             }
         })
+    }
+
+    private fun insetSources():DataModel{
+        return DataModel("https://alifei01.cfp.cn/creative/vcg/veer/1600water/veer-375427800.jpg","插入的")
     }
 
 
@@ -294,6 +287,79 @@ class MainActivity : AppCompatActivity() {
             DataModel(
                 "https://alifei02.cfp.cn/creative/vcg/veer/800water/veer-134695071.jpg",
                 "zdvc"
+            )
+        )
+
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg",
+                "tata"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg",
+                "ytss"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg",
+                "afa"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg",
+                "fdaf"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg",
+                "bvxb"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg",
+                "czvcz"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg",
+                "tata"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg",
+                "ytss"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg",
+                "afa"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg",
+                "fdaf"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg",
+                "bvxb"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg",
+                "czvcz"
             )
         )
         return mutableListOf

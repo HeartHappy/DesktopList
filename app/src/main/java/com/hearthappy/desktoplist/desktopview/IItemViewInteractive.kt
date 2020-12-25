@@ -9,7 +9,20 @@ import android.view.View
  * ClassDescription:
  */
 interface IItemViewInteractive {
-    fun selectViewRect(rect: RectF?)
 
-    fun releaseView(releaseView:View?)
+    /**
+     * 选中View位置
+     */
+    fun selectViewRect(
+        rect: RectF?,
+        selectView: View?,
+        adapterPosition: Int,
+        fragmentContent: FragmentContent
+    )
+
+    /**
+     * 当前页面View移动时
+     */
+    fun moveView(fromPosition: Int, targetPosition: Int): Boolean
+
 }

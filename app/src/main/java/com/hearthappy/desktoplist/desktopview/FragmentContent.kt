@@ -32,6 +32,7 @@ class FragmentContent(
     private val iItemViewInteractive: IItemViewInteractive
 ) :
     Fragment() {
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,7 +43,6 @@ class FragmentContent(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val rvDesktopList = view.findViewById<RecyclerView>(R.id.rvDesktopList)
         val gridLayoutManager = GridLayoutManager(context, spanCount)
         rvDesktopList.layoutManager = gridLayoutManager
         //涉及数据绑定View的交给用户自定义
@@ -53,18 +53,41 @@ class FragmentContent(
         Log.d(TAG, "onViewCreated: $position")
     }
 
+
+
+
+    fun getAdapter(): DesktopListAdapter {
+        return rvDesktopList.adapter as DesktopListAdapter
+    }
+
+    fun getRecyclerView(): RecyclerView {
+        return rvDesktopList
+    }
+
+    fun replaceLocal(fromPosition: Int, toPosition: Int, listData: MutableList<DataModel>) {
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(listData, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(listData, i, i - 1)
+            }
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d(TAG, "onDestroyView: $position")
+        Log.d(TAG, "onDestroyView: ")
     }
 
-    // TODO: 2020/12/22 因缓存问题，Fragment被销毁，导致无法获取Activity的窗体
+
     override fun onDetach() {
         super.onDetach()
-        Log.d(TAG, "onDetach: $position")
+        Log.d(TAG, "onDetach: ")
     }
 
-    inner class ItemTouchHelperCallback : ItemTouchHelper.Callback() {
+    private inner class ItemTouchHelperCallback : ItemTouchHelper.Callback() {
         override fun getMovementFlags(
             recyclerView: RecyclerView,
             viewHolder: RecyclerView.ViewHolder
@@ -93,23 +116,23 @@ class FragmentContent(
             target: RecyclerView.ViewHolder
         ): Boolean {
             Log.d("FragmentContent", "onMove: ")
+
             //得到当拖拽的viewHolder的Position
-            val fromPosition = viewHolder.adapterPosition
+            /*val fromPosition = viewHolder.adapterPosition
             //拿到当前拖拽到的item的viewHolder
             val toPosition = target.adapterPosition
-            if (fromPosition < toPosition) {
-                for (i in fromPosition until toPosition) {
-                    Collections.swap(listData, i, i + 1)
-                }
-            } else {
-                for (i in fromPosition downTo toPosition + 1) {
-                    Collections.swap(listData, i, i - 1)
-                }
-            }
-            rvDesktopList.adapter?.notifyItemMoved(fromPosition, toPosition)
-            return true
+            replaceLocal(fromPosition, toPosition, listData)
+            // TODO: 2020/12/24 增加移动动画
+            rvDesktopList?.adapter?.run {
+                notifyItemMoved(fromPosition, toPosition)
+            }*/
+            return  iItemViewInteractive.moveView(viewHolder.adapterPosition,target.adapterPosition)
         }
 
+
+        /**
+         * 滑动删除
+         */
         override fun onSwiped(
             viewHolder: RecyclerView.ViewHolder,
             direction: Int
@@ -127,40 +150,43 @@ class FragmentContent(
             actionState: Int
         ) {
             if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
-                viewHolder?.itemView?.let { iv ->
-                    val frameLayout = getDecorView()
-                    //将原ImageView属性copy
-                    val linearLayout = iv as LinearLayout
-                    val imageView = linearLayout.getChildAt(0) as ImageView
+                viewHolder?.let { vh ->
+                    vh.itemView.let { iv ->
+                        //隐藏原有视图
+//                        iv.visibility = View.INVISIBLE
+                        val frameLayout = getDecorView()
+                        //将原ImageView属性copy
+                        val linearLayout = iv as LinearLayout
+                        val imageView = linearLayout.getChildAt(0) as ImageView
 
-                    val tempImageView = ImageView(context)
-                    val imageViewLayoutParams =
-                        FrameLayout.LayoutParams(imageView.width, imageView.height)
-                    tempImageView.setImageDrawable(imageView.drawable)
-                    tempImageView.layoutParams = imageViewLayoutParams
-                    tempImageView.scaleType = imageView.scaleType
-                    tempImageView.id = R.id.createView
-                    //设置View位置
-                    val moveViewRect = ViewOperateUtils.findViewLocation(imageView)
-                    val layoutParams = FrameLayout.LayoutParams(imageView.width, imageView.height)
-                    layoutParams.setMargins(
-                        moveViewRect.left.toInt(),
-                        moveViewRect.top.toInt(),
-                        0,
-                        0
-                    )
-                    //添加DecorView到视图
-                    frameLayout?.addView(tempImageView, layoutParams)
-                    //隐藏原有视图
-                    linearLayout.visibility = View.GONE
-
-                    iItemViewInteractive.selectViewRect(moveViewRect)
-                    tempImageView.animate().scaleX(1.2f).scaleY(1.2f).start()
-                    Log.d(
-                        "FragmentContent",
-                        "createTempView: 创建临时View${imageView.width},${imageView.height}"
-                    )
+                        val tempImageView = ImageView(context)
+                        val imageViewLayoutParams =
+                            FrameLayout.LayoutParams(imageView.width, imageView.height)
+                        tempImageView.setImageDrawable(imageView.drawable)
+                        tempImageView.layoutParams = imageViewLayoutParams
+                        tempImageView.scaleType = imageView.scaleType
+                        tempImageView.id = R.id.createView
+                        //设置View位置
+                        val moveViewRect = ViewOperateUtils.findViewLocation(imageView)
+                        val layoutParams =
+                            FrameLayout.LayoutParams(imageView.width, imageView.height)
+                        layoutParams.setMargins(
+                            moveViewRect.left.toInt(),
+                            moveViewRect.top.toInt(),
+                            0,
+                            0
+                        )
+                        //添加DecorView到视图
+                        frameLayout?.addView(tempImageView, layoutParams)
+                        iItemViewInteractive.selectViewRect(moveViewRect, iv, vh.adapterPosition,this@FragmentContent)
+                        tempImageView.animate().scaleX(1.4f).scaleY(1.4f).start()
+                        Log.d(
+                            "FragmentContent",
+                            "createTempView: 创建临时View${imageView.width},${imageView.height}"
+                        )
+                    }
                 }
+
             }
             super.onSelectedChanged(viewHolder, actionState)
         }
@@ -174,19 +200,7 @@ class FragmentContent(
             recyclerView: RecyclerView,
             viewHolder: RecyclerView.ViewHolder
         ) {
-            //删除临时View
-            val frameLayout = getDecorView()
-            val tempView = getTempView(frameLayout)
-            tempView?.let {
-                iItemViewInteractive.releaseView(it)
-                //删除临时视图
-                frameLayout?.removeView(it)
-                //显示原有视图
-                viewHolder.itemView.visibility = View.VISIBLE
-                Log.d("FragmentContent", "clearView: 删除临时View")
-            } ?: let {
-                Log.d(TAG, "clearView: $tempView")
-            }
+//            iItemViewInteractive.releaseView(viewHolder.itemView)
         }
 
         /**
@@ -207,6 +221,7 @@ class FragmentContent(
         activity?.window?.decorView?.let {
             return it as FrameLayout
         }
+        Log.d(TAG, "getDecorView: 返回空了$activity")
         return null
     }
 
@@ -214,3 +229,4 @@ class FragmentContent(
         private const val TAG = "FragmentContent"
     }
 }
+
