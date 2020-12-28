@@ -22,13 +22,13 @@ class MainActivity : AppCompatActivity() {
             }
             when (style) {
                 1 -> {
-                    dlv.setAppStyle(true)
+                    dlv.appStyle(true)
                 }
                 2 -> {
-                    dlv.setAppStyle(true, 8)
+                    dlv.appStyle(true, 8)
                 }
                 else -> {
-                    dlv.setAppStyle()
+                    dlv.appStyle()
                 }
             }
         }

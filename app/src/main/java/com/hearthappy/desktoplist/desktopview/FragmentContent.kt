@@ -54,12 +54,6 @@ class FragmentContent(
         val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
         itemTouchHelper.attachToRecyclerView(rvDesktopList)
         Log.d(TAG, "onViewCreated: $position")
-        rvDesktopList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                RecyclerView.SCROLL_STATE_IDLE
-            }
-        })
     }
 
 

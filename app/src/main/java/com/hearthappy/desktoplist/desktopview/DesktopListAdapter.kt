@@ -29,6 +29,7 @@ class DesktopListAdapter(
 ) :
     RecyclerView.Adapter<DesktopListAdapter.ViewHolder>() {
 
+    private var implicitPosition = -1 //隐式插入下标
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(context).inflate(iDesktopList.adapterResId(), parent, false)
@@ -42,6 +43,10 @@ class DesktopListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 //        iDesktopList.onBindViewHolder(holder, position, listData)
 
+        if (implicitPosition != -1 && implicitPosition == position) {
+            holder.itemView.visibility = View.INVISIBLE
+            Log.d(TAG, "onBindViewHolder: 存在隐式View：$implicitPosition")
+        }
         //设置图片圆角角度
         //通过RequestOptions扩展功能,override:采样率,因为ImageView就这么大,可以压缩图片,降低内存消耗
         Glide.with(context).load(listData[position].url)
@@ -65,7 +70,7 @@ class DesktopListAdapter(
         textView.text = listData[position].appName
 
         holder.itemView.setOnClickListener {
-            Log.d("TAG", "onBindViewHolder:点击： $position,${listData.size}")
+            Log.d(TAG, "onBindViewHolder:点击： $position,${listData.size}")
             Toast.makeText(
                 context,
                 "${listData[position].appName},position:$position",
@@ -73,7 +78,7 @@ class DesktopListAdapter(
             ).show()
         }
         Log.d(
-            "TAG",
+            TAG,
             "onBindViewHolder: $position,${listData.get(position).appName},url:${listData.get(
                 position
             ).url}"
@@ -83,31 +88,30 @@ class DesktopListAdapter(
     fun inset(dataModel: DataModel, position: Int) {
         listData.add(position, dataModel)
         notifyItemInserted(position)
-//        notifyItemRangeChanged(position,itemCount)
         notifyDataSetChanged()
     }
 
-    fun remove(position: Int) {
+    /**
+     * 隐式插入
+     */
+    fun implicitInset(dataModel: DataModel, position: Int) {
+        listData.add(position, dataModel)
+        notifyItemRangeChanged(position,listData.size)
+        implicitPosition = position
+    }
+
+    fun implicitRemove(position: Int) {
         listData.removeAt(position)
-        notifyItemRemoved(position)
-        notifyItemRangeRemoved(position, itemCount)
+        notifyItemRangeChanged(position,listData.size)
+        implicitPosition = -1
     }
 
-    fun replace(formPosition: Int, toPosition: Int, dataModel: DataModel) {
-        remove(dataModel, formPosition)
-        listData.add(toPosition, dataModel)
-        notifyDataSetChanged()
-        Log.d(
-            "TAG",
-            "replace: 选中DM:${dataModel.appName},url:${dataModel.url},$formPosition,$toPosition"
-        )
-    }
 
     fun remove(dataModel: DataModel, position: Int) {
         val listIterator = listData.listIterator()
         while (listIterator.hasNext()) {
             if (listIterator.next() == dataModel) {
-                Log.d("remove", "remove: 找到了")
+                Log.d(TAG, "remove: 找到了")
                 listIterator.remove()
             }
         }
@@ -119,7 +123,17 @@ class DesktopListAdapter(
         notifyDataSetChanged()
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    fun getImplicitPosition(): Int {
+        return implicitPosition
+    }
 
+    fun resetImplicitPosition(){
+        implicitPosition=-1
+    }
+
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    companion object {
+        private const val TAG = "DesktopListAdapter"
     }
 }
