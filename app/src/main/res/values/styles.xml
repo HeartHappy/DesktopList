@@ -7,4 +7,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="style_navigation">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/frame_radius_violet</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="paddingStart">4dp</item>
+        <item name="paddingEnd">4dp</item>
+    </style>
 </resources>

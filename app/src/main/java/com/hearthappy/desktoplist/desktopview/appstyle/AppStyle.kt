@@ -4,11 +4,11 @@ package com.hearthappy.desktoplist.desktopview.appstyle
 /**
  * Created Date 2020/12/25.
  * @author ChenRui
- * ClassDescription:
+ * ClassDescription:应用图标显示样式
  */
 class AppStyle : IAppStyle {
-    var appStyleType=IAppStyle.APP_STYLE_CIRCLE
-    var radius=0
+    var appStyleType = IAppStyle.APP_STYLE_NO
+    var radius = 0
     override fun appStyleType(): Int {
         return appStyleType
     }

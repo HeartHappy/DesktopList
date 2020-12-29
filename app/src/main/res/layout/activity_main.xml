@@ -15,12 +15,14 @@
         app:popupTheme="@style/AppTheme.PopupOverlay">
 
         <Button
-            android:id="@+id/btnAddPage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/frame_radius_violet"
+            android:id="@+id/btnSwitchAppStyle"
             android:text="切换样式"
-            android:textColor="#fff" />
+            style="@style/style_navigation" />
+        <Button
+            android:id="@+id/btnSwitchTransformPage"
+            style="@style/style_navigation"
+            android:text="切换侧滑动画"
+             />
     </androidx.appcompat.widget.Toolbar>
 
     <com.hearthappy.desktoplist.desktopview.DesktopListView

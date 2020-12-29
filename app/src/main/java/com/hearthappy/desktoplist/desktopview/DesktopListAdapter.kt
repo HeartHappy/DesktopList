@@ -22,13 +22,19 @@ import com.hearthappy.desktoplist.desktopview.appstyle.IAppStyle
  * @author ChenRui
  * ClassDescription:
  */
-class DesktopListAdapter(private val context: Context, private val listData: MutableList<DataModel>, private val iDesktopList: IDesktopList, private val appStyle: IAppStyle) : RecyclerView.Adapter<DesktopListAdapter.ViewHolder>() {
+class DesktopListAdapter(
+    private val context: Context,
+    private val listData: MutableList<DataModel>,
+    private val iDesktopList: IDesktopList,
+    private val appStyle: IAppStyle
+) : RecyclerView.Adapter<DesktopListAdapter.ViewHolder>() {
 
     private var implicitPosition = -1 //隐式插入下标，会发生改变
     private var implicitPositionFirstInset = -1 //首次插入隐式位置，不会发生改变
-    private var hideFromPosition = -1 //来自页面的隐式下标
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(iDesktopList.adapterResId(), parent, false))
+        return ViewHolder(
+            LayoutInflater.from(context).inflate(iDesktopList.adapterResId(), parent, false)
+        )
     }
 
     override fun getItemCount(): Int {
@@ -48,18 +54,20 @@ class DesktopListAdapter(private val context: Context, private val listData: Mut
             }
         }
 
-        if (isHideFromPosition() && hideFromPosition == position) {
-            holder.itemView.visibility = View.INVISIBLE
-        }
         //设置图片圆角角度
         //通过RequestOptions扩展功能,override:采样率,因为ImageView就这么大,可以压缩图片,降低内存消耗
-        Glide.with(context).load(listData[position].url).placeholder(R.mipmap.ic_launcher).error(android.R.drawable.ic_menu_report_image).apply {
+        Glide.with(context).load(listData[position].url).placeholder(R.mipmap.ic_launcher)
+            .error(android.R.drawable.ic_menu_report_image).apply {
                 when (appStyle.appStyleType()) {
                     IAppStyle.APP_STYLE_CIRCLE -> {
                         apply(RequestOptions.circleCropTransform())
                     }
                     IAppStyle.APP_STYLE_ROUNDED -> {
-                        apply(RequestOptions().transforms(CenterCrop(), RoundedCorners(appStyle.radius())))
+                        apply(
+                            RequestOptions().transform(
+                                CenterCrop(), RoundedCorners(appStyle.radius())
+                            )
+                        )
                     }
                 }
             }.into(holder.itemView.findViewById(R.id.ivAppIcon))
@@ -69,9 +77,14 @@ class DesktopListAdapter(private val context: Context, private val listData: Mut
 
         holder.itemView.setOnClickListener {
             Log.d(TAG, "onBindViewHolder:点击： $position,${listData.size}")
-            Toast.makeText(context, "${listData[position].appName},position:$position", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context, "${listData[position].appName},position:$position", Toast.LENGTH_SHORT
+            ).show()
         }
-        Log.d(TAG, "onBindViewHolder: $position,${listData.get(position).appName},url:${listData[position].url},是否显示${holder.itemView.visibility == View.VISIBLE},隐式View：$implicitPosition")
+        Log.d(
+            TAG,
+            "onBindViewHolder: $position,${listData[position].appName},url:${listData[position].url},是否显示${holder.itemView.visibility == View.VISIBLE},隐式View：$implicitPosition"
+        )
     }
 
     fun inset(dataModel: DataModel, position: Int) {
@@ -96,17 +109,6 @@ class DesktopListAdapter(private val context: Context, private val listData: Mut
         implicitPosition = -1
         implicitPositionFirstInset = -1
         Log.d(TAG, "implicitRemove: 隐式删除$implicitPositionFirstInset")
-    }
-
-    fun hideSelectItemView(position: Int) {
-        hideFromPosition = position
-        notifyItemChanged(position)
-    }
-
-    fun showSelectItemView() {
-        val oldHideFromPosition = hideFromPosition
-        hideFromPosition = -1
-        notifyItemChanged(oldHideFromPosition)
     }
 
     fun move(fromPosition: Int, targetPosition: Int) {
@@ -134,7 +136,10 @@ class DesktopListAdapter(private val context: Context, private val listData: Mut
 
     fun getImplicitPositionIsChange(): Boolean {
         if (implicitPosition != -1 && implicitPosition != implicitPositionFirstInset) {
-            Log.d(TAG, "getImplicitPositionIsChange: 隐式位置发生改变$implicitPosition,$implicitPositionFirstInset")
+            Log.d(
+                TAG,
+                "getImplicitPositionIsChange: 隐式位置发生改变$implicitPosition,$implicitPositionFirstInset"
+            )
             return true
         }
         return false
@@ -142,10 +147,6 @@ class DesktopListAdapter(private val context: Context, private val listData: Mut
 
     fun isImplicitInset(): Boolean {
         return implicitPosition > -1
-    }
-
-    private fun isHideFromPosition(): Boolean {
-        return hideFromPosition > -1
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

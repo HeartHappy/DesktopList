@@ -23,6 +23,7 @@ import com.hearthappy.desktoplist.DataModel
 import com.hearthappy.desktoplist.R
 import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
 import com.hearthappy.desktoplist.desktopview.appstyle.IAppStyle
+import com.hearthappy.desktoplist.desktopview.transformpage.PagerTransformer
 import com.hearthappy.desktoplist.desktopview.utils.ComputerUtils
 import com.hearthappy.desktoplist.desktopview.utils.Preconditions
 import com.hearthappy.desktoplist.desktopview.utils.ViewOperateUtils
@@ -51,7 +52,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private var fromAdapterPosition = -1 //选中当前页面适配的position（第几个item）
     private var fromFragmentContent: FragmentContent? = null //选中ItemView来自的Fragment视图
     private var currentFragmentContent: Fragment? = null
-    var firstMoveTime = 0L
+    private var firstMoveTime = 0L
     private var floatViewScrollState: Int = 0 //默认禁止状态
 
 
@@ -66,8 +67,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     //用户的数据源
-    var userListData: MutableList<MutableList<DataModel>> by Delegates.notNull()
-    var desktopListData: MutableList<MutableList<DataModel>> = mutableListOf()
+    private var userListData: MutableList<MutableList<DataModel>> by Delegates.notNull()
+    private var desktopListData: MutableList<MutableList<DataModel>> = mutableListOf()
 
     private var isMessageSend = false //消息是否已发送,另代表是否在边界
     private var myHandler: Handler = Handler(Handler.Callback {
@@ -99,22 +100,31 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
     }
 
-    fun appStyleAsDefault() {
+    fun appStyleAsDefault(): DesktopListView {
         appStyle.appStyleType = IAppStyle.APP_STYLE_NO
-        notifyPageStyleSetChange()
+        return this
     }
 
-    fun appStyleAsCircle() {
+    fun appStyleAsCircle(): DesktopListView {
         appStyle.appStyleType = IAppStyle.APP_STYLE_CIRCLE
-        notifyPageStyleSetChange()
+        return this
     }
 
-    fun appStyleAsRounded(radius: Int) {
+    fun appStyleAsRounded(radius: Int): DesktopListView {
         Preconditions.checkArgument(radius > 0, "roundingRadius must be greater than 0.")
         appStyle.appStyleType = IAppStyle.APP_STYLE_ROUNDED
         appStyle.radius = radius
-        notifyPageStyleSetChange()
+        return this
+    }
 
+    fun transformAnimation(animationType: Int): DesktopListView {
+        Log.d(TAG, "transformAnimation: $animationType")
+        setPageTransformer(true, PagerTransformer(animationType))
+        return this
+    }
+
+    fun notifyChange() {
+        notifyPageStyleSetChange()
     }
 
     /**
@@ -122,7 +132,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      */
     private fun notifyPageStyleSetChange() {
         this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
-        //        init(totalCount, spanCount, defaultShowCount, iDesktopList)
     }
 
 
@@ -284,7 +293,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         Log.d(TAG, "findReplaceView: $fromAdapterPosition,$targetIndex")
         val adapter = targetFragment.getAdapter()
         adapter?.run {
-            showSelectItemView()
             //松开时的几种情况
             //1、松开时在当前页
             when {
@@ -335,6 +343,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     }
 
+    /**
+     * 移动后改变数据源并进行重新绑定
+     */
     private fun moveChangeDataSource(targetFragment: FragmentContent, fromIndex: Int, targetIndex: Int, fromPagePosition: Int) {
         try {
             targetFragment.replaceLocal(fromIndex, targetIndex, desktopListData[fromPagePosition])
