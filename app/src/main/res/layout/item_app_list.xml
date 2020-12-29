@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="113dp"
     android:gravity="center"
+    android:background="@drawable/frame_radius_violet"
     android:orientation="vertical"
     tools:ignore="UseCompoundDrawables">
 

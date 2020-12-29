@@ -29,7 +29,8 @@ class DesktopListAdapter(
 ) :
     RecyclerView.Adapter<DesktopListAdapter.ViewHolder>() {
 
-    private var implicitPosition = -1 //隐式插入下标
+    private var implicitPosition = -1 //隐式插入下标，会发生改变
+    private var implicitPositionFirstInset=-1//首次插入隐式位置，不会发生改变
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(context).inflate(iDesktopList.adapterResId(), parent, false)
@@ -81,7 +82,7 @@ class DesktopListAdapter(
             TAG,
             "onBindViewHolder: $position,${listData.get(position).appName},url:${listData.get(
                 position
-            ).url}"
+            ).url},是否显示${holder.itemView.visibility==View.VISIBLE}"
         )
     }
 
@@ -98,6 +99,7 @@ class DesktopListAdapter(
         listData.add(position, dataModel)
         notifyItemRangeChanged(position,listData.size)
         implicitPosition = position
+        implicitPositionFirstInset=position
     }
 
     fun implicitRemove(position: Int) {
@@ -106,18 +108,12 @@ class DesktopListAdapter(
         implicitPosition = -1
     }
 
-
-    fun remove(dataModel: DataModel, position: Int) {
-        val listIterator = listData.listIterator()
-        while (listIterator.hasNext()) {
-            if (listIterator.next() == dataModel) {
-                Log.d(TAG, "remove: 找到了")
-                listIterator.remove()
-            }
-        }
-        notifyItemRemoved(position)
-        notifyItemRangeRemoved(position, itemCount)
+    fun move(fromPosition:Int,targetPosition:Int){
+        notifyItemMoved(fromPosition,targetPosition)
+        implicitPosition=targetPosition
     }
+
+
 
     fun notifyDataChanged() {
         notifyDataSetChanged()
@@ -127,8 +123,24 @@ class DesktopListAdapter(
         return implicitPosition
     }
 
+    fun getImplicitPositionInFirstInset():Int{
+        return implicitPositionFirstInset
+    }
+
     fun resetImplicitPosition(){
         implicitPosition=-1
+        implicitPositionFirstInset=-1
+    }
+
+    fun getImplicitPositionIsChange():Boolean{
+        if(implicitPosition!=-1 && implicitPosition!=implicitPositionFirstInset){
+            Log.d(
+                TAG,
+                "getImplicitPositionIsChange: 隐式位置发生改变$implicitPosition,$implicitPositionFirstInset"
+            )
+            return true
+        }
+        return false
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
