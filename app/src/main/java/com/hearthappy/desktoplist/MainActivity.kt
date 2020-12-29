@@ -22,13 +22,13 @@ class MainActivity : AppCompatActivity() {
             }
             when (style) {
                 1 -> {
-                    dlv.appStyle(true)
+                    dlv.appStyleAsCircle()
                 }
                 2 -> {
-                    dlv.appStyle(true, 8)
+                    dlv.appStyleAsRounded(8)
                 }
                 else -> {
-                    dlv.appStyle()
+                    dlv.appStyleAsDefault()
                 }
             }
         }

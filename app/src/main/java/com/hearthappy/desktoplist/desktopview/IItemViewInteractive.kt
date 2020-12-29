@@ -14,7 +14,6 @@ interface IItemViewInteractive {
      * 选中View位置
      */
     fun selectViewRect(
-        rect: RectF?,
         selectView: View?,
         adapterPosition: Int,
         fragmentContent: FragmentContent

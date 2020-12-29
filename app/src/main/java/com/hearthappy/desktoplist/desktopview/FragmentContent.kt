@@ -6,15 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.desktoplist.DataModel
 import com.hearthappy.desktoplist.R
-import com.hearthappy.desktoplist.desktopview.utils.ViewOperateUtils
+import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
 import kotlinx.android.synthetic.main.fragment_tab_main.*
 import java.util.*
 
@@ -57,8 +55,10 @@ class FragmentContent(
     }
 
 
-    fun getAdapter(): DesktopListAdapter {
-        return rvDesktopList.adapter as DesktopListAdapter
+    fun getAdapter(): DesktopListAdapter? {
+        rvDesktopList?.adapter?.let { return it as DesktopListAdapter } ?: let {
+            return null
+        }
     }
 
     fun getRecyclerView(): RecyclerView {
@@ -73,6 +73,20 @@ class FragmentContent(
         } else {
             for (i in fromPosition downTo toPosition + 1) {
                 Collections.swap(listData, i, i - 1)
+            }
+        }
+    }
+
+
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        if (!isVisibleToUser) {
+            //如果隐藏了检测是否存在隐式插入的ItemView
+            val adapter = getAdapter()
+            adapter?.let {
+                if (it.isImplicitInset()) {
+                    it.implicitRemove()
+                    Log.d(TAG, "setUserVisibleHint: 不显示了，并且当前页面存在隐式View，执行删除")
+                }
             }
         }
     }
@@ -123,7 +137,6 @@ class FragmentContent(
             //拿到当前拖拽到的item的viewHolder
             val toPosition = target.adapterPosition
 //            replaceLocal(fromPosition, toPosition, listData)
-            // TODO: 2020/12/24 增加移动动画
             rvDesktopList?.adapter?.run {
                 notifyItemMoved(fromPosition, toPosition)
             }
@@ -153,42 +166,10 @@ class FragmentContent(
             if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
                 viewHolder?.let { vh ->
                     vh.itemView.let { iv ->
-                        //隐藏原有视图
-                        iv.visibility = View.INVISIBLE
-                        val frameLayout = getDecorView()
-                        //将原ImageView属性copy
-                        val linearLayout = iv as LinearLayout
-                        val imageView = linearLayout.getChildAt(0) as ImageView
-
-                        val tempImageView = ImageView(context)
-                        val imageViewLayoutParams =
-                            FrameLayout.LayoutParams(imageView.width, imageView.height)
-                        tempImageView.setImageDrawable(imageView.drawable)
-                        tempImageView.layoutParams = imageViewLayoutParams
-                        tempImageView.scaleType = imageView.scaleType
-                        tempImageView.id = R.id.createView
-                        //设置View位置
-                        val moveViewRect = ViewOperateUtils.findViewLocation(imageView)
-                        val layoutParams =
-                            FrameLayout.LayoutParams(imageView.width, imageView.height)
-                        layoutParams.setMargins(
-                            moveViewRect.left.toInt(),
-                            moveViewRect.top.toInt(),
-                            0,
-                            0
-                        )
-                        //添加DecorView到视图
-                        frameLayout?.addView(tempImageView, layoutParams)
                         iItemViewInteractive.selectViewRect(
-                            moveViewRect,
                             iv,
                             vh.adapterPosition,
                             this@FragmentContent
-                        )
-                        tempImageView.animate().scaleX(1.4f).scaleY(1.4f).start()
-                        Log.d(
-                            "FragmentContent",
-                            "createTempView: 创建临时View${imageView.width},${imageView.height}"
                         )
                     }
                 }
