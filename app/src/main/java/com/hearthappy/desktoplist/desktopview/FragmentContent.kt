@@ -24,18 +24,15 @@ import java.util.*
  */
 class FragmentContent(
     private val position: Int,
-    private val listData: MutableList<DataModel>,
+    private val listData: MutableList<Any>,
     private val iDesktopList: IDesktopList,
     private val spanCount: Int,
     private val appStyle: AppStyle,
     private val iItemViewInteractive: IItemViewInteractive
-) :
-    Fragment() {
+) : Fragment() {
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_tab_main, container, false)
     }
@@ -55,8 +52,8 @@ class FragmentContent(
     }
 
 
-    fun getAdapter(): DesktopListAdapter? {
-        rvDesktopList?.adapter?.let { return it as DesktopListAdapter } ?: let {
+    fun getAdapter(): DesktopListAdapter<Any>? {
+        rvDesktopList?.adapter?.let { return it as DesktopListAdapter<Any> } ?: let {
             return null
         }
     }
@@ -65,7 +62,7 @@ class FragmentContent(
         return rvDesktopList
     }
 
-    fun replaceLocal(fromPosition: Int, toPosition: Int, listData: MutableList<DataModel>) {
+    fun replaceLocal(fromPosition: Int, toPosition: Int, listData: MutableList<Any>) {
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
                 Collections.swap(listData, i, i + 1)
@@ -104,23 +101,20 @@ class FragmentContent(
 
     private inner class ItemTouchHelperCallback : ItemTouchHelper.Callback() {
         override fun getMovementFlags(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder
+            recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
         ): Int {
             return if (recyclerView.layoutManager is GridLayoutManager) {
                 val dragFlags =
                     ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
                 val swipeFlags = 0
                 makeMovementFlags(
-                    dragFlags,
-                    swipeFlags
+                    dragFlags, swipeFlags
                 )
             } else {
                 val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
                 val swipeFlags = 0
                 makeMovementFlags(
-                    dragFlags,
-                    swipeFlags
+                    dragFlags, swipeFlags
                 )
             }
         }
@@ -136,7 +130,7 @@ class FragmentContent(
             val fromPosition = viewHolder.adapterPosition
             //拿到当前拖拽到的item的viewHolder
             val toPosition = target.adapterPosition
-//            replaceLocal(fromPosition, toPosition, listData)
+            //            replaceLocal(fromPosition, toPosition, listData)
             rvDesktopList?.adapter?.run {
                 notifyItemMoved(fromPosition, toPosition)
             }
@@ -148,8 +142,7 @@ class FragmentContent(
          * 滑动删除
          */
         override fun onSwiped(
-            viewHolder: RecyclerView.ViewHolder,
-            direction: Int
+            viewHolder: RecyclerView.ViewHolder, direction: Int
         ) {
         }
 
@@ -160,16 +153,13 @@ class FragmentContent(
          * @param actionState
          */
         override fun onSelectedChanged(
-            viewHolder: RecyclerView.ViewHolder?,
-            actionState: Int
+            viewHolder: RecyclerView.ViewHolder?, actionState: Int
         ) {
             if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
                 viewHolder?.let { vh ->
                     vh.itemView.let { iv ->
                         iItemViewInteractive.selectViewRect(
-                            iv,
-                            vh.adapterPosition,
-                            this@FragmentContent
+                            iv, vh.adapterPosition, this@FragmentContent
                         )
                     }
                 }
@@ -183,10 +173,9 @@ class FragmentContent(
          * @param viewHolder
          */
         override fun clearView(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder
+            recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
         ) {
-//            iItemViewInteractive.releaseView(viewHolder.itemView)
+            //            iItemViewInteractive.releaseView(viewHolder.itemView)
         }
 
         /**

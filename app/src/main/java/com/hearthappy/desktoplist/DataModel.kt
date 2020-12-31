@@ -5,4 +5,4 @@ package com.hearthappy.desktoplist
  * @author ChenRui
  * ClassDescription:
  */
-class DataModel(var url: String?, var appName: String?)
+data class DataModel(var url: String?, var appName: String?): Any()

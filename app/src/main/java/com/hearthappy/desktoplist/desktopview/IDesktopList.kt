@@ -1,7 +1,6 @@
 package com.hearthappy.desktoplist.desktopview
 
 import android.view.View
-import com.hearthappy.desktoplist.DataModel
 
 /**
  * Created Date 2020/12/21.
@@ -13,7 +12,7 @@ interface IDesktopList {
     /**
      * 原数据源
      */
-    fun dataSources(): MutableList<DataModel>
+    fun dataSources(): MutableList<Any>
 
     /**
      * 初始化试图的ResId
@@ -25,9 +24,7 @@ interface IDesktopList {
      * 绑定ViewHolder
      */
     fun onBindViewHolder(
-        holder: DesktopListAdapter.ViewHolder,
-        position: Int,
-        listData: MutableList<DataModel>
+        holder: DesktopListAdapter<Any>.ViewHolder, position: Int, listData: MutableList<Any>
     )
 
     /**

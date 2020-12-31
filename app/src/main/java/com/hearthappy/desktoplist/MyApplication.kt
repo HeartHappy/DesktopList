@@ -1,4 +1,4 @@
-package com.hearthappy.desktoplist.desktopview
+package com.hearthappy.desktoplist
 
 import android.app.Application
 import com.tencent.bugly.crashreport.CrashReport

@@ -1,80 +1,20 @@
-package com.hearthappy.desktoplist
+package com.hearthappy.desktoplist.desktopview.model
 
-import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import com.hearthappy.desktoplist.desktopview.DesktopListAdapter
-import com.hearthappy.desktoplist.desktopview.IDesktopList
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.transformpage.PagerTransformer
-import kotlinx.android.synthetic.main.activity_main.*
+import com.hearthappy.desktoplist.DataModel
 
-class MainActivity : AppCompatActivity() {
-
-    private var styleIndex = 0
-    private var transformPagerIndex = 0
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        btnSwitchAppStyle.setOnClickListener {
-            when (++styleIndex % 3) {
-                1 -> dlv.appStyle(AppStyle.Rounded(16)).notifyChange()
-                2 -> dlv.appStyle(AppStyle.Circle).notifyChange()
-                else -> dlv.appStyle(AppStyle.NotStyle).notifyChange()
-            }
-            Toast.makeText(this, "切换成功", Toast.LENGTH_SHORT).show()
-        }
-
-        btnSwitchTransformPage.setOnClickListener {
-            when (++transformPagerIndex % 3) {
-                1 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Windmill).notifyChange()
-                2 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.FloatUp).notifyChange()
-                else -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Translate)
-                    .notifyChange()
-            }
-            Toast.makeText(this, "切换成功", Toast.LENGTH_SHORT).show()
-        }
-
-
-        //初始化数据集
-        val dataSources = initDataSources()
-        dlv.init(dataSources.size, 3, 15, object : IDesktopList {
-            override fun dataSources(): MutableList<Any> {
-                return dataSources
-            }
-
-            override fun adapterResId(): Int {
-                return R.layout.item_app_list
-            }
-
-            override fun onBindViewHolder(
-                holder: DesktopListAdapter<Any>.ViewHolder,
-                position: Int,
-                listData: MutableList<Any>
-            ) {
-                println(listData[position].toString())
-            }
-
-
-            override fun viewMoveBounds(leftBorder: Boolean, rightBorder: Boolean, moveView: View) {
-
-            }
-        })
+/**
+ * Created Date 2020/12/31.
+ * @author ChenRui
+ * ClassDescription:
+ */
+class DataModel : IDataModel<List<DataModel>>{
+    //
+    override fun onCreateDataModel(): List<DataModel> {
+        return initDataSources()
     }
 
 
-    private fun insetSources(): DataModel {
-        return DataModel(
-            "https://alifei01.cfp.cn/creative/vcg/veer/1600water/veer-375427800.jpg", "插入的"
-        )
-    }
-
-
-    private fun initDataSources(): MutableList<Any> {
+    private fun initDataSources(): MutableList<DataModel> {
         val mutableListOf = mutableListOf<DataModel>()
         mutableListOf.add(
             DataModel(
@@ -90,22 +30,54 @@ class MainActivity : AppCompatActivity() {
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/eHfs1vYJDtMzyNP.jpg", "777"))
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/1gktxsnzqJLSaVm.jpg", "888"))
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/fS4r1aKhVvbz5JF.jpg", "999"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/AQRoOnbycmTgwWF.jpg", "mnnmc"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/Ekba7zI95TywMNK.jpg", "jfka"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/CSi1tkGJYonBMxV.jpg", "fvcc"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/AQRoOnbycmTgwWF.jpg", "mnnmc"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/Ekba7zI95TywMNK.jpg", "jfka"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/CSi1tkGJYonBMxV.jpg", "fvcc"
+            )
+        )
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/E7goR89IqH4wxiK.jpg", "cvv"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "tata"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "ytss"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "tata"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "ytss"
+            )
+        )
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "afa"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"
+            )
+        )
         mutableListOf.add(
             DataModel(
                 "http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg",
                 "czvcz"
             )
         )
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "vzvzx"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "vzvzx"
+            )
+        )
         mutableListOf.add(
             DataModel(
                 "http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg",
@@ -212,28 +184,60 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "tata"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "ytss"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "tata"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "ytss"
+            )
+        )
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "afa"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"
+            )
+        )
         mutableListOf.add(
             DataModel(
                 "http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg",
                 "czvcz"
             )
         )
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "tata"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "ytss"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "tata"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "ytss"
+            )
+        )
         mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "afa"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"))
-        mutableListOf.add(DataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"))
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"
+            )
+        )
+        mutableListOf.add(
+            DataModel(
+                "https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"
+            )
+        )
         mutableListOf.add(
             DataModel(
                 "http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg",
                 "czvcz"
             )
         )
-        return mutableListOf.toMutableList()
+        return mutableListOf
     }
 }

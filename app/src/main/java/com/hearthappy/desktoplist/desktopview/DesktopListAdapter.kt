@@ -5,16 +5,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
-import com.hearthappy.desktoplist.DataModel
-import com.hearthappy.desktoplist.R
-import com.hearthappy.desktoplist.desktopview.appstyle.IAppStyle
+import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
 
 
 /**
@@ -22,12 +14,12 @@ import com.hearthappy.desktoplist.desktopview.appstyle.IAppStyle
  * @author ChenRui
  * ClassDescription:
  */
-class DesktopListAdapter(
+class DesktopListAdapter<T>(
     private val context: Context,
-    private val listData: MutableList<DataModel>,
+    private val listData: MutableList<T>,
     private val iDesktopList: IDesktopList,
-    private val appStyle: IAppStyle
-) : RecyclerView.Adapter<DesktopListAdapter.ViewHolder>() {
+    private val appStyle: AppStyle
+) : RecyclerView.Adapter<DesktopListAdapter<T>.ViewHolder>() {
 
     private var implicitPosition = -1 //隐式插入下标，会发生改变
     private var implicitPositionFirstInset = -1 //首次插入隐式位置，不会发生改变
@@ -42,7 +34,7 @@ class DesktopListAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        //        iDesktopList.onBindViewHolder(holder, position, listData)
+
 
         if (implicitPosition != -1 && implicitPosition == position) {
             holder.itemView.visibility = View.INVISIBLE
@@ -53,41 +45,40 @@ class DesktopListAdapter(
                 holder.itemView.visibility = View.VISIBLE
             }
         }
+        //已经正常打印出来了
+        println("position:$position,${listData[position].toString()}")
+//                iDesktopList.onBindViewHolder(holder, position, listData)
 
         //设置图片圆角角度
         //通过RequestOptions扩展功能,override:采样率,因为ImageView就这么大,可以压缩图片,降低内存消耗
-        Glide.with(context).load(listData[position].url).placeholder(R.mipmap.ic_launcher)
-            .error(android.R.drawable.ic_menu_report_image).apply {
-                when (appStyle.appStyleType()) {
-                    IAppStyle.APP_STYLE_CIRCLE -> {
-                        apply(RequestOptions.circleCropTransform())
-                    }
-                    IAppStyle.APP_STYLE_ROUNDED -> {
-                        apply(
-                            RequestOptions().transform(
-                                CenterCrop(), RoundedCorners(appStyle.radius())
-                            )
-                        )
-                    }
-                }
-            }.into(holder.itemView.findViewById(R.id.ivAppIcon))
-        val textView = holder.itemView.findViewById(R.id.tvAppName) as TextView
+        /* Glide.with(context).load(listData[position].url).placeholder(R.mipmap.ic_launcher)
+             .error(android.R.drawable.ic_menu_report_image).apply {
+                 when (appStyle) {
+                     is AppStyle.Circle -> apply(RequestOptions.circleCropTransform())
+                     is AppStyle.Rounded -> apply(
+                         RequestOptions().transform(
+                             CenterCrop(), RoundedCorners(appStyle.radius)
+                         )
+                     )
+                 }
+             }.into(holder.itemView.findViewById(R.id.ivAppIcon))
+         val textView = holder.itemView.findViewById(R.id.tvAppName) as TextView
 
-        textView.text = listData[position].appName
+         textView.text = listData[position].appName
 
-        holder.itemView.setOnClickListener {
-            Log.d(TAG, "onBindViewHolder:点击： $position,${listData.size}")
-            Toast.makeText(
-                context, "${listData[position].appName},position:$position", Toast.LENGTH_SHORT
-            ).show()
-        }
-        Log.d(
-            TAG,
-            "onBindViewHolder: $position,${listData[position].appName},url:${listData[position].url},是否显示${holder.itemView.visibility == View.VISIBLE},隐式View：$implicitPosition"
-        )
+         holder.itemView.setOnClickListener {
+             Log.d(TAG, "onBindViewHolder:点击： $position,${listData.size}")
+             Toast.makeText(
+                 context, "${listData[position].appName},position:$position", Toast.LENGTH_SHORT
+             ).show()
+         }
+         Log.d(
+             TAG,
+             "onBindViewHolder: $position,${listData[position].appName},url:${listData[position].url},是否显示${holder.itemView.visibility == View.VISIBLE},隐式View：$implicitPosition"
+         )*/
     }
 
-    fun inset(dataModel: DataModel, position: Int) {
+    fun inset(dataModel: T, position: Int) {
         listData.add(position, dataModel)
         notifyItemInserted(position)
         notifyDataSetChanged()
@@ -96,7 +87,7 @@ class DesktopListAdapter(
     /**
      * 隐式插入
      */
-    fun implicitInset(dataModel: DataModel, position: Int) {
+    fun implicitInset(dataModel: T, position: Int) {
         listData.add(position, dataModel)
         notifyItemRangeChanged(position, listData.size)
         implicitPosition = position

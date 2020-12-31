@@ -1,19 +1,12 @@
 package com.hearthappy.desktoplist.desktopview.appstyle
 
-
 /**
- * Created Date 2020/12/25.
+ * Created Date 2020/12/30.
  * @author ChenRui
- * ClassDescription:应用图标显示样式
+ * ClassDescription:app style密封类，指定类型
  */
-class AppStyle : IAppStyle {
-    var appStyleType = IAppStyle.APP_STYLE_NO
-    var radius = 0
-    override fun appStyleType(): Int {
-        return appStyleType
-    }
-
-    override fun radius(): Int {
-        return radius
-    }
+sealed class AppStyle {
+    object Circle : AppStyle()
+    object NotStyle : AppStyle()
+    data class Rounded(val radius: Int) : AppStyle()
 }
