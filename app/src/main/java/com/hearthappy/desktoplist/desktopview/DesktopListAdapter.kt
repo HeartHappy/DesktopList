@@ -47,7 +47,7 @@ class DesktopListAdapter<T>(
         }
         //已经正常打印出来了
         println("position:$position,${listData[position].toString()}")
-//                iDesktopList.onBindViewHolder(holder, position, listData)
+                iDesktopList.onBindViewHolder(holder, position, listData)
 
         //设置图片圆角角度
         //通过RequestOptions扩展功能,override:采样率,因为ImageView就这么大,可以压缩图片,降低内存消耗

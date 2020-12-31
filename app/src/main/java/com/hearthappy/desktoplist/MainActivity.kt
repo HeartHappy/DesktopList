@@ -51,17 +51,16 @@ class MainActivity : AppCompatActivity() {
                 return R.layout.item_app_list
             }
 
-            override fun onBindViewHolder(
-                holder: DesktopListAdapter<Any>.ViewHolder,
-                position: Int,
-                listData: MutableList<Any>
-            ) {
-                println(listData[position].toString())
-            }
 
 
             override fun viewMoveBounds(leftBorder: Boolean, rightBorder: Boolean, moveView: View) {
 
+            }
+
+            override fun <T> onBindViewHolder(
+                holder: DesktopListAdapter<T>.ViewHolder, position: Int, listData: MutableList<T>
+            ) {
+                TODO("Not yet implemented")
             }
         })
     }

@@ -23,13 +23,16 @@ interface IDesktopList {
     /**
      * 绑定ViewHolder
      */
-    fun onBindViewHolder(
+    /*fun onBindViewHolder(
         holder: DesktopListAdapter<Any>.ViewHolder, position: Int, listData: MutableList<Any>
-    )
+    )*/
 
     /**
      * 手势触摸View移动时是否越界，true代表越界，下面参数代表是否左侧越界或右侧越界
      */
     fun viewMoveBounds(leftBorder: Boolean, rightBorder: Boolean, moveView: View)
+    fun <T> onBindViewHolder(
+        holder: DesktopListAdapter<T>.ViewHolder, position: Int, listData: MutableList<T>
+    )
 
 }
