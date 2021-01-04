@@ -5,16 +5,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.hearthappy.desktoplist.DataModel
 import com.hearthappy.desktoplist.R
 import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
+import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
 import kotlinx.android.synthetic.main.fragment_tab_main.*
 import java.util.*
+import kotlin.reflect.KProperty
 
 
 /**
@@ -24,12 +25,14 @@ import java.util.*
  */
 class FragmentContent(
     private val position: Int,
-    private val listData: MutableList<Any>,
-    private val iDesktopList: IDesktopList,
+    private val listData: MutableList<IBindDataModel>,
     private val spanCount: Int,
     private val appStyle: AppStyle,
+    private val iDesktopListAdapter: IDesktopListAdapter,
     private val iItemViewInteractive: IItemViewInteractive
 ) : Fragment() {
+
+    private val desktopListAdapter: DesktopListAdapter by Delegate()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -42,8 +45,7 @@ class FragmentContent(
         val gridLayoutManager = GridLayoutManager(context, spanCount)
         rvDesktopList.layoutManager = gridLayoutManager
         //涉及数据绑定View的交给用户自定义
-        rvDesktopList.adapter =
-            context?.let { DesktopListAdapter(it, listData, iDesktopList, appStyle) }
+        rvDesktopList.adapter = desktopListAdapter
         rvDesktopList.itemAnimator?.changeDuration = 0
         //绑定移动View
         val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
@@ -51,9 +53,8 @@ class FragmentContent(
         Log.d(TAG, "onViewCreated: $position")
     }
 
-
-    fun getAdapter(): DesktopListAdapter<Any>? {
-        rvDesktopList?.adapter?.let { return it as DesktopListAdapter<Any> } ?: let {
+    internal fun getAdapter(): DesktopListAdapter? {
+        rvDesktopList?.adapter?.let { return it as DesktopListAdapter } ?: let {
             return null
         }
     }
@@ -62,7 +63,7 @@ class FragmentContent(
         return rvDesktopList
     }
 
-    fun replaceLocal(fromPosition: Int, toPosition: Int, listData: MutableList<Any>) {
+    fun replaceLocal(fromPosition: Int, toPosition: Int, listData: MutableList<*>) {
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
                 Collections.swap(listData, i, i + 1)
@@ -73,7 +74,6 @@ class FragmentContent(
             }
         }
     }
-
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         if (!isVisibleToUser) {
@@ -93,10 +93,19 @@ class FragmentContent(
         Log.d(TAG, "onDestroyView: ")
     }
 
-
     override fun onDetach() {
         super.onDetach()
         Log.d(TAG, "onDetach: ")
+    }
+
+    // 委托的类
+    inner class Delegate {
+        internal operator fun getValue(thisRef: Any?, property: KProperty<*>): DesktopListAdapter {
+            DesktopListAdapter(context, listData, iDesktopListAdapter).run {
+                appStyle = this@FragmentContent.appStyle
+                return this
+            }
+        }
     }
 
     private inner class ItemTouchHelperCallback : ItemTouchHelper.Callback() {
@@ -187,14 +196,6 @@ class FragmentContent(
         }
     }
 
-
-    private fun getDecorView(): FrameLayout? {
-        activity?.window?.decorView?.let {
-            return it as FrameLayout
-        }
-        Log.d(TAG, "getDecorView: 返回空了$activity")
-        return null
-    }
 
     companion object {
         private const val TAG = "FragmentContent"

@@ -14,19 +14,22 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.hearthappy.desktoplist.R
+import com.hearthappy.desktoplist.*
 import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
+import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopDataModel
+import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
 import com.hearthappy.desktoplist.desktopview.transformpage.PagerTransformer
 import com.hearthappy.desktoplist.desktopview.utils.ComputerUtils
 import com.hearthappy.desktoplist.desktopview.utils.ViewOperateUtils
 import org.jetbrains.annotations.NotNull
 import kotlin.math.abs
-import kotlin.properties.Delegates
 
 /**
  * Created Date 2020/12/21.
@@ -36,11 +39,11 @@ import kotlin.properties.Delegates
  * 2、分页Fragment加载View绑定数据
  */
 class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(context, attrs) {
+
+
     private var defaultShowCount = 15 //每页显示个数
     private var spanCount = 3 //列数
-    private var totalCount = 0 //总数量
     private var totalPage = 0 //总页数
-    private var iDesktopList: IDesktopList by Delegates.notNull() //返回用户的接口
 
 
     private var fromItemViewRect: RectF? = null //选中ItemView的Rect，用来计算分发的x、y和选中ImageView偏移距离
@@ -52,8 +55,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private var firstMoveTime = 0L
     private var floatViewScrollState: Int = 0 //默认禁止状态
 
-
-    private var appStyle: AppStyle = AppStyle.Circle
+    private var appStyle: AppStyle = AppStyle.NotStyle
 
     //以下三个属性主要解决dispatchTouchEvent事件分发的X、Y与选中View存在偏移问题
     private var isFirstDispatch = false  //是否位按下时的第一次分发
@@ -64,8 +66,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     //用户的数据源
-    private lateinit var userListData: MutableList<MutableList<Any>>
-    private lateinit var desktopListData: MutableList<MutableList<Any>>
+    private lateinit var userListData: MutableList<MutableList<IBindDataModel>>
+    private lateinit var desktopListData: MutableList<MutableList<IBindDataModel>>
 
     private var isMessageSend = false //消息是否已发送,另代表是否在边界
     private var myHandler: Handler = Handler {
@@ -82,20 +84,33 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         false
     }
 
+    //    private val iDesktopAdapterView: IDesktopAdapterView<*> = DesktopAdapterView()
+
+    private lateinit var iDesktopDataModel: IDesktopDataModel<IBindDataModel>
+    private lateinit var iDesktopListAdapter: IDesktopListAdapter
+
     /**
      * 1、初始化数据
      * 2、初始化总页数：根据数据的总数量和每页显示数量（默认每页显示15个）
      */
     fun init(
-        totalCount: Int, spanCount: Int, defaultShowCount: Int, @NotNull iDesktopList: IDesktopList
+        spanCount: Int,
+        defaultShowCount: Int,
+        @NonNull iDesktopList: IDesktopDataModel<IBindDataModel>,
+        @NotNull iDesktopListAdapter: IDesktopListAdapter
     ) {
         initProperty()
-        this.totalCount = totalCount
         this.spanCount = spanCount
         this.defaultShowCount = defaultShowCount
-        this.iDesktopList = iDesktopList
-        this.totalPage = ComputerUtils.getAllPage(totalCount, defaultShowCount)
+        this.iDesktopDataModel = iDesktopList
+        this.iDesktopListAdapter = iDesktopListAdapter
         initData()
+        this.totalPage = ComputerUtils.getAllPage(iDesktopList.dataSize(), defaultShowCount)
+        //创建成员变量存储，改变数据时无需改变用户传入的数据源
+        for (i in 0 until totalPage) {
+            val dataModels = userListData[i]
+            desktopListData.add(dataModels)
+        }
         this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
     }
 
@@ -137,16 +152,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
          * 延迟加载是否被初始化
          */
         if (!::userListData.isInitialized) {
-            userListData = ComputerUtils.split(iDesktopList.dataSources(), defaultShowCount)
+            userListData = ComputerUtils.split(iDesktopDataModel.dataSources(), defaultShowCount)
         }
         if (!::desktopListData.isInitialized) {
             desktopListData = mutableListOf()
-        }
-
-        //创建成员变量存储，改变数据时无需改变用户传入的数据源
-        for (i in 0 until totalPage) {
-            val dataModels = userListData[i]
-            desktopListData.add(dataModels)
         }
     }
 
@@ -189,8 +198,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                                         } else if (!isImplicitInset() && itemCount < defaultShowCount && targetIndex != itemCount) {
                                             //Log.d(TAG, "dispatchTouchEvent:插入目标位置：${targetIndex}")
                                             implicitInset(
-                                                desktopListData[fromPagePosition][fromAdapterPosition],
-                                                targetIndex
+                                                targetIndex,
+                                                desktopListData[fromPagePosition][fromAdapterPosition]
                                             )
                                         }
                                     }
@@ -221,7 +230,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     /**
      * 检查是否需要移动隐式ItemView位置
      */
-    private fun DesktopListAdapter<Any>.checkNeedToMove(
+    private fun DesktopListAdapter.checkNeedToMove(
         targetFragment: FragmentContent, mfv: View, targetIndex: Int
     ) {
         val implicitViewHolder =
@@ -350,7 +359,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         resetImplicitPosition()
                     } else {
                         val dataModel = desktopListData[fromPagePosition][fromAdapterPosition]
-                        inset(dataModel, targetIndex)
+                        inset(targetIndex, dataModel)
                     }
                     //跨界面删除，由于页面被销毁了，所以需要修改为删除数据源
                     desktopListData[fromPagePosition].removeAt(fromAdapterPosition)
@@ -552,9 +561,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             //创建时拿取数据
             return FragmentContent(position,
                 desktopListData[position],
-                iDesktopList,
                 spanCount,
                 appStyle,
+                iDesktopListAdapter,
                 object : IItemViewInteractive {
                     override fun selectViewRect(
                         selectView: View?, adapterPosition: Int, fragmentContent: FragmentContent
@@ -565,7 +574,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         fromAdapterPosition = adapterPosition
                         fromFragmentContent = fragmentContent
                         this@DesktopListView.fromItemView = selectView
-
 
                         createFloatView(selectView)
                         Log.d(
