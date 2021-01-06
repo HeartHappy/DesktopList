@@ -1,18 +1,14 @@
 package com.hearthappy.desktoplist.test
 
 import android.content.Context
-import android.os.Parcel
-import android.os.Parcelable
 import android.widget.Toast
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 import com.hearthappy.desktoplist.R
-import com.hearthappy.desktoplist.desktopview.DesktopListAdapter
 import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.desktopview.DesktopListAdapter
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
 import com.hearthappy.desktoplist.interfaces.IDesktopListAdapter
+import kotlinx.android.parcel.Parcelize
 
 /**
  * Created Date 2021/1/4.
@@ -20,11 +16,13 @@ import com.hearthappy.desktoplist.interfaces.IDesktopListAdapter
  * ClassDescription: 重写桌面列表适配器，自己实现逻辑处理
  *
  */
-class DesktopListAdapterImpl() : IDesktopListAdapter {
+@Parcelize class DesktopListAdapterImpl : IDesktopListAdapter {
 
-    constructor(parcel: Parcel) : this() {
-    }
 
+    /**
+     * 适配器的布局
+     * @return Int
+     */
     override fun onAdapterResId(): Int {
         return R.layout.item_app_list
     }
@@ -36,24 +34,11 @@ class DesktopListAdapterImpl() : IDesktopListAdapter {
         list: List<IBindDataModel>,
         appStyle: AppStyle
     ) {
-
         holder.tvText.text = list[position].getAppName()
-
         context?.let {
             Glide.with(it).load(list[position].getAppUrl()).placeholder(R.mipmap.ic_launcher)
-                .error(android.R.drawable.ic_menu_report_image).apply(
-                    when (appStyle) {
-                        is AppStyle.Circle -> RequestOptions.circleCropTransform()
-                        is AppStyle.Rounded -> RequestOptions().transform(
-                            CenterCrop(), RoundedCorners(appStyle.radius)
-                        )
-                        else -> {
-                            RequestOptions.centerCropTransform()
-                        }
-                    }
-                ).into(holder.ivAppIcon)
+                .error(android.R.drawable.ic_menu_report_image).into(holder.ivAppIcon)
         }
-
         holder.itemView.setOnClickListener {
             Toast.makeText(
                 context,
@@ -63,21 +48,11 @@ class DesktopListAdapterImpl() : IDesktopListAdapter {
         }
     }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-//        super.writeToParcel(parcel, flags)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<DesktopListAdapterImpl> {
-        override fun createFromParcel(parcel: Parcel): DesktopListAdapterImpl {
-            return DesktopListAdapterImpl(parcel)
-        }
-
-        override fun newArray(size: Int): Array<DesktopListAdapterImpl?> {
-            return arrayOfNulls(size)
-        }
+    /**
+     * 注意：该返回值同你的布局高度填写，用于计算每个页面最多显示数量时使用
+     * @return Int  R.dimen.dp_~
+     */
+    override fun onItemViewHeight(): Int {
+        return R.dimen.dp_110
     }
 }

@@ -25,14 +25,13 @@ import kotlin.reflect.KProperty
  * ClassDescription:动态创建的分页Fragment
  */
 class FragmentContent : Fragment() {
-    var position by Delegates.notNull<Int>()
-    var listData: MutableList<IBindDataModel> by Delegates.notNull()
-    var spanCount: Int by Delegates.notNull()
-    var appStyle: AppStyle by Delegates.notNull()
-    var iDesktopListAdapter: IDesktopListAdapter by Delegates.notNull()
-    var iItemViewInteractive: IItemViewInteractive by Delegates.notNull()
+    private var position by Delegates.notNull<Int>()
+    private var spanCount: Int by Delegates.notNull()
+    private var appStyle: AppStyle by Delegates.notNull()
+    private var iDesktopListAdapter: IDesktopListAdapter by Delegates.notNull()
+    private var iItemViewInteractive: IItemViewInteractive by Delegates.notNull()
     private val desktopListAdapter: DesktopListAdapter by Delegate()
-
+    private var listData: MutableList<IBindDataModel> by Delegates.notNull()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -232,6 +231,7 @@ class FragmentContent : Fragment() {
         private val IDESKTOPLISTADAPTER = "iDesktopListAdapter"
         private val IITEMVIEWINTERACTIVE = "IItemViewInteractive"
         private const val TAG = "FragmentContent"
+
     }
 }
 

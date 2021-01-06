@@ -16,13 +16,13 @@
 
         <Button
             android:id="@+id/btnSwitchAppStyle"
-            android:text="切换样式"
-            style="@style/style_navigation" />
+            style="@style/style_navigation"
+            android:text="切换样式" />
+
         <Button
             android:id="@+id/btnSwitchTransformPage"
             style="@style/style_navigation"
-            android:text="切换侧滑动画"
-             />
+            android:text="切换侧滑动画" />
     </androidx.appcompat.widget.Toolbar>
 
     <com.hearthappy.desktoplist.desktopview.DesktopListView

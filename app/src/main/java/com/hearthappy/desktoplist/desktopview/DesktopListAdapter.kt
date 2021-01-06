@@ -28,7 +28,8 @@ class DesktopListAdapter(
         parent: ViewGroup, viewType: Int
     ): ViewHolder {
         return ViewHolder(
-            LayoutInflater.from(context).inflate(iDesktopListAdapter.onAdapterResId(), parent, false)
+            LayoutInflater.from(context)
+                .inflate(iDesktopListAdapter.onAdapterResId(), parent, false)
         )
     }
 

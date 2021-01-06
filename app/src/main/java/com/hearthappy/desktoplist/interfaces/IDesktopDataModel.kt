@@ -8,13 +8,12 @@ package com.hearthappy.desktoplist.interfaces
 interface IDesktopDataModel<out DB : IBindDataModel> {
 
     /**
-     * 原数据源
+     * @return List<DB> 返回数据的集合
      */
     fun dataSources(): List<DB>
 
     /**
-     * 数据源的数量
-     * @return Int
+     * @return Int 返回数据集合的数量
      */
     fun dataSize(): Int
 

@@ -5,17 +5,11 @@ import com.hearthappy.desktoplist.interfaces.IDesktopDataModel
 /**
  * Created Date 2021/1/4.
  * @author ChenRui
- * ClassDescription:
+ * ClassDescription:数据类
  */
 class DesktopDataModel: IDesktopDataModel<BindDataModel> {
     private val mutableListOf = ArrayList<BindDataModel>()
     private fun initDataSources(): MutableList<BindDataModel> {
-        mutableListOf.add(
-            BindDataModel(
-                "http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg",
-                "111"
-            )
-        )
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "222"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "333"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "444"))
@@ -33,6 +27,12 @@ class DesktopDataModel: IDesktopDataModel<BindDataModel> {
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "afa"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "fdaf"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "bvxb"))
+        mutableListOf.add(
+            BindDataModel(
+                "http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg",
+                "111"
+            )
+        )
         mutableListOf.add(
             BindDataModel(
                 "http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg",
@@ -178,5 +178,4 @@ class DesktopDataModel: IDesktopDataModel<BindDataModel> {
     override fun dataSize(): Int {
        return mutableListOf.size
     }
-
 }

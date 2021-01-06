@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
+
 android {
     compileSdkVersion 29
     buildToolsVersion "30.0.0"
@@ -39,4 +40,5 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'com.tencent.bugly:crashreport:latest.release' //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.2.0
     implementation 'com.inthecheesefactory.thecheeselibrary:stated-fragment-support-v4:0.9.1'
+
 }

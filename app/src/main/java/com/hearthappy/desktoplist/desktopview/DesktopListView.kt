@@ -3,7 +3,6 @@ package com.hearthappy.desktoplist.desktopview
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Handler
 import android.os.Parcel
@@ -16,6 +15,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.IntRange
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -42,7 +42,7 @@ import kotlin.math.abs
 class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(context, attrs) {
 
 
-    private var defaultShowCount = 15 //每页显示个数
+    private var singlePageShowCount = 0 //每页显示个数
     private var spanCount = 3 //列数
     private var totalPage = 0 //总页数
 
@@ -94,22 +94,22 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 2、初始化总页数：根据数据的总数量和每页显示数量（默认每页显示15个）
      */
     fun init(
-        spanCount: Int,
-        defaultShowCount: Int,
+        @IntRange(from = 1, to = 5) spanCount: Int,
         @NotNull iDesktopList: IDesktopDataModel<IBindDataModel>,
         @NotNull iDesktopListAdapter: IDesktopListAdapter
     ) {
+        if (height <= 0) {
+            postDelayed({ init(spanCount, iDesktopList, iDesktopListAdapter) }, 200)
+            return
+        }
+
         this.spanCount = spanCount
-        this.defaultShowCount = defaultShowCount
         this.iDesktopDataModel = iDesktopList
         this.iDesktopListAdapter = iDesktopListAdapter
-        initProperty()
-        initData()
-        totalPage = ComputerUtils.getAllPage(iDesktopDataModel.dataSize(), defaultShowCount)
-        //创建成员变量存储，改变数据时无需改变用户传入的数据源
-        dataConversion()
-        adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
-        Log.d(TAG, "init: ")
+        singlePageShowCount =
+            height / resources.getDimensionPixelSize(iDesktopListAdapter.onItemViewHeight()) * spanCount
+        Log.d(TAG, "initProperty: 每页显示:$singlePageShowCount")
+        initPageData()
     }
 
 
@@ -141,20 +141,20 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     }
 
 
-    private fun initProperty() {
-        //        offscreenPageLimit = 2
-    }
-
-    private fun initData() {
+    private fun initPageData() {
         /**
          * 延迟加载是否被初始化
          */
         if (!::userListData.isInitialized) {
-            userListData = ComputerUtils.split(iDesktopDataModel.dataSources(), defaultShowCount)
+            userListData = ComputerUtils.split(iDesktopDataModel.dataSources(), singlePageShowCount)
         }
         if (!::desktopListData.isInitialized) {
             desktopListData = mutableListOf()
         }
+        totalPage = ComputerUtils.getAllPage(iDesktopDataModel.dataSize(), this.singlePageShowCount)
+        //创建成员变量存储，改变数据时无需改变用户传入的数据源
+        dataConversion()
+        adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
     }
 
     private fun dataConversion() {
@@ -199,7 +199,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                                         if (isImplicitInset()) {
                                             checkNeedToMove(targetFragment, mfv, targetIndex)
                                             //静止状态下，不存在，则插入
-                                        } else if (!isImplicitInset() && itemCount < defaultShowCount && targetIndex != itemCount) {
+                                        } else if (!isImplicitInset() && itemCount < singlePageShowCount && targetIndex != itemCount) {
                                             //Log.d(TAG, "dispatchTouchEvent:插入目标位置：${targetIndex}")
                                             implicitInset(
                                                 targetIndex,
@@ -268,15 +268,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return super.onTouchEvent(ev)
     }
 
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        Log.d(TAG, "onSizeChanged: ")
-    }
-
-    override fun onDraw(canvas: Canvas?) {
-//        super.onDraw(canvas)
-    }
 
     /**
      * 创建浮动View
@@ -503,7 +494,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         //        Log.d(TAG, "findReplaceView--->moveViewRect: $moveViewRect")
         val currentPageItemCount = fragmentContent.getRecyclerView().adapter?.itemCount
         currentPageItemCount?.let { cic ->
-            if (cic == defaultShowCount && fromPagePosition != currentItem) {
+            if (cic == singlePageShowCount && fromPagePosition != currentItem) {
                 return -1
             }
             var localIntersect = -1 //原位置相交
