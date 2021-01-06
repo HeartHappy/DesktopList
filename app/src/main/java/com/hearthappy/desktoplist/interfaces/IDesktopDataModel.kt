@@ -1,4 +1,4 @@
-package com.hearthappy.desktoplist.desktopview.interfaces
+package com.hearthappy.desktoplist.interfaces
 
 /**
  * Created Date 2020/12/21.

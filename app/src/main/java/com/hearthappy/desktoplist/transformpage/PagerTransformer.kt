@@ -1,4 +1,4 @@
-package com.hearthappy.desktoplist.desktopview.transformpage
+package com.hearthappy.desktoplist.transformpage
 
 import android.view.View
 import androidx.viewpager.widget.ViewPager

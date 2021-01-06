@@ -1,4 +1,4 @@
-package com.hearthappy.desktoplist.desktopview.model
+package com.hearthappy.desktoplist.model
 
 /**
  * Created Date 2020/12/30.

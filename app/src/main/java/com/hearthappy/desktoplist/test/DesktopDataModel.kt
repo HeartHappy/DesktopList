@@ -1,6 +1,6 @@
 package com.hearthappy.desktoplist.test
 
-import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopDataModel
+import com.hearthappy.desktoplist.interfaces.IDesktopDataModel
 
 /**
  * Created Date 2021/1/4.
@@ -8,7 +8,7 @@ import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopDataModel
  * ClassDescription:
  */
 class DesktopDataModel: IDesktopDataModel<BindDataModel> {
-    private val mutableListOf = mutableListOf<BindDataModel>()
+    private val mutableListOf = ArrayList<BindDataModel>()
     private fun initDataSources(): MutableList<BindDataModel> {
         mutableListOf.add(
             BindDataModel(

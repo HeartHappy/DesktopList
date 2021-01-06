@@ -3,8 +3,10 @@ package com.hearthappy.desktoplist.desktopview
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Handler
+import android.os.Parcel
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -14,20 +16,19 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.hearthappy.desktoplist.*
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
-import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopDataModel
-import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
-import com.hearthappy.desktoplist.desktopview.transformpage.PagerTransformer
-import com.hearthappy.desktoplist.desktopview.utils.ComputerUtils
-import com.hearthappy.desktoplist.desktopview.utils.ViewOperateUtils
+import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.interfaces.IDesktopDataModel
+import com.hearthappy.desktoplist.interfaces.IDesktopListAdapter
+import com.hearthappy.desktoplist.transformpage.PagerTransformer
+import com.hearthappy.desktoplist.utils.ComputerUtils
+import com.hearthappy.desktoplist.utils.ViewOperateUtils
 import org.jetbrains.annotations.NotNull
 import kotlin.math.abs
 
@@ -84,10 +85,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         false
     }
 
-    //    private val iDesktopAdapterView: IDesktopAdapterView<*> = DesktopAdapterView()
-
     private lateinit var iDesktopDataModel: IDesktopDataModel<IBindDataModel>
     private lateinit var iDesktopListAdapter: IDesktopListAdapter
+
 
     /**
      * 1、初始化数据
@@ -96,23 +96,22 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     fun init(
         spanCount: Int,
         defaultShowCount: Int,
-        @NonNull iDesktopList: IDesktopDataModel<IBindDataModel>,
+        @NotNull iDesktopList: IDesktopDataModel<IBindDataModel>,
         @NotNull iDesktopListAdapter: IDesktopListAdapter
     ) {
-        initProperty()
         this.spanCount = spanCount
         this.defaultShowCount = defaultShowCount
         this.iDesktopDataModel = iDesktopList
         this.iDesktopListAdapter = iDesktopListAdapter
+        initProperty()
         initData()
-        this.totalPage = ComputerUtils.getAllPage(iDesktopList.dataSize(), defaultShowCount)
+        totalPage = ComputerUtils.getAllPage(iDesktopDataModel.dataSize(), defaultShowCount)
         //创建成员变量存储，改变数据时无需改变用户传入的数据源
-        for (i in 0 until totalPage) {
-            val dataModels = userListData[i]
-            desktopListData.add(dataModels)
-        }
-        this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
+        dataConversion()
+        adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
+        Log.d(TAG, "init: ")
     }
+
 
     fun appStyle(appStyleType: AppStyle): DesktopListView {
         this.appStyle = appStyleType
@@ -144,7 +143,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     private fun initProperty() {
         //        offscreenPageLimit = 2
-
     }
 
     private fun initData() {
@@ -159,6 +157,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
+    private fun dataConversion() {
+        for (i in 0 until totalPage) {
+            val dataModels = userListData[i]
+            desktopListData.add(dataModels)
+        }
+    }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         ev?.let {
@@ -226,7 +230,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return super.dispatchTouchEvent(ev)
     }
 
-
     /**
      * 检查是否需要移动隐式ItemView位置
      */
@@ -265,6 +268,15 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return super.onTouchEvent(ev)
     }
 
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        Log.d(TAG, "onSizeChanged: ")
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+//        super.onDraw(canvas)
+    }
 
     /**
      * 创建浮动View
@@ -308,7 +320,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         fromItemView = null
         Log.d(TAG, "floatViewUp--->remove float View")
     }
-
 
     /**
      * 查找替换View位置
@@ -415,7 +426,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
-
     /**
      * 触摸状态是否为移动状态
      */
@@ -453,7 +463,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return true
     }
 
-
     /**
      * 是否切换ViewPager页数
      */
@@ -484,7 +493,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             }
         }
     }
-
 
     /**
      * 返回Target页面的TargetItem的Index
@@ -538,7 +546,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return 0
     }
 
-
     private fun getFloatView(frameLayout: FrameLayout): View? {
         return frameLayout.findViewById(R.id.createView)
     }
@@ -559,7 +566,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         override fun getItem(position: Int): Fragment {
 
             //创建时拿取数据
-            return FragmentContent(position,
+            return FragmentContent.newInstance(position,
                 desktopListData[position],
                 spanCount,
                 appStyle,
@@ -580,6 +587,13 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                             TAG,
                             "selectItemView:current page:${currentItem},接口返回： $selectView,选中position:$adapterPosition"
                         )
+                    }
+
+                    override fun describeContents(): Int {
+                        return 0
+                    }
+
+                    override fun writeToParcel(dest: Parcel?, flags: Int) {
                     }
                 })
         }
@@ -606,7 +620,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
         const val SCROLL_STATE_IDLE = 0 //浮动View禁止状态
         const val SCROLL_STATE_MOVE = 1 //浮动View移动状态
-
-
     }
 }
+

@@ -1,10 +1,11 @@
 package com.hearthappy.desktoplist
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.transformpage.PagerTransformer
+import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.transformpage.PagerTransformer
 import com.hearthappy.desktoplist.test.DesktopDataModel
 import com.hearthappy.desktoplist.test.DesktopListAdapterImpl
 import kotlinx.android.synthetic.main.activity_main.*

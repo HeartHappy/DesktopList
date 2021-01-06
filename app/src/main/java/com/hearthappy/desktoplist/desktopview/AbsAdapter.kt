@@ -4,8 +4,8 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.interfaces.IBindDataModel
 
 /**
  * Created Date 2020/12/31.

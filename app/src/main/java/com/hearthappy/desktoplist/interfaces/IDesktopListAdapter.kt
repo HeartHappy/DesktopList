@@ -1,15 +1,17 @@
-package com.hearthappy.desktoplist.desktopview.interfaces
+package com.hearthappy.desktoplist.interfaces
 
 import android.content.Context
+import android.os.Parcelable
+import com.hearthappy.desktoplist.appstyle.AppStyle
 import com.hearthappy.desktoplist.desktopview.DesktopListAdapter
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
+import java.io.Serializable
 
 /**
  * Created Date 2021/1/4.
  * @author ChenRui
  * ClassDescription:
  */
-interface IDesktopListAdapter {
+interface IDesktopListAdapter :Parcelable {
 
     //创建ViewHolder的布局id
     fun onAdapterResId(): Int

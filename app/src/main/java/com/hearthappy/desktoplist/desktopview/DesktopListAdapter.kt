@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
-import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
+import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.interfaces.IDesktopListAdapter
 import kotlinx.android.synthetic.main.item_app_list.view.*
 
 /**

@@ -1,4 +1,4 @@
-package com.hearthappy.desktoplist.desktopview.utils
+package com.hearthappy.desktoplist.utils
 
 import android.text.TextUtils
 

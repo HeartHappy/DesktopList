@@ -1,6 +1,8 @@
 package com.hearthappy.desktoplist.test
 
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -8,9 +10,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.hearthappy.desktoplist.R
 import com.hearthappy.desktoplist.desktopview.DesktopListAdapter
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
-import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
+import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.interfaces.IDesktopListAdapter
 
 /**
  * Created Date 2021/1/4.
@@ -18,7 +20,10 @@ import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
  * ClassDescription: 重写桌面列表适配器，自己实现逻辑处理
  *
  */
-class DesktopListAdapterImpl : IDesktopListAdapter {
+class DesktopListAdapterImpl() : IDesktopListAdapter {
+
+    constructor(parcel: Parcel) : this() {
+    }
 
     override fun onAdapterResId(): Int {
         return R.layout.item_app_list
@@ -55,6 +60,24 @@ class DesktopListAdapterImpl : IDesktopListAdapter {
                 "position:$position,name:${list[position].getAppName()}",
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+//        super.writeToParcel(parcel, flags)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<DesktopListAdapterImpl> {
+        override fun createFromParcel(parcel: Parcel): DesktopListAdapterImpl {
+            return DesktopListAdapterImpl(parcel)
+        }
+
+        override fun newArray(size: Int): Array<DesktopListAdapterImpl?> {
+            return arrayOfNulls(size)
         }
     }
 }

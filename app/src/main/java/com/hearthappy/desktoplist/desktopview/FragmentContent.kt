@@ -10,11 +10,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.desktoplist.R
-import com.hearthappy.desktoplist.desktopview.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.interfaces.IBindDataModel
-import com.hearthappy.desktoplist.desktopview.interfaces.IDesktopListAdapter
+import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.interfaces.IDesktopListAdapter
 import kotlinx.android.synthetic.main.fragment_tab_main.*
 import java.util.*
+import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
 
 
@@ -23,16 +24,31 @@ import kotlin.reflect.KProperty
  * @author ChenRui
  * ClassDescription:动态创建的分页Fragment
  */
-class FragmentContent(
-    private val position: Int,
-    private val listData: MutableList<IBindDataModel>,
-    private val spanCount: Int,
-    private val appStyle: AppStyle,
-    private val iDesktopListAdapter: IDesktopListAdapter,
-    private val iItemViewInteractive: IItemViewInteractive
-) : Fragment() {
-
+class FragmentContent : Fragment() {
+    var position by Delegates.notNull<Int>()
+    var listData: MutableList<IBindDataModel> by Delegates.notNull()
+    var spanCount: Int by Delegates.notNull()
+    var appStyle: AppStyle by Delegates.notNull()
+    var iDesktopListAdapter: IDesktopListAdapter by Delegates.notNull()
+    var iItemViewInteractive: IItemViewInteractive by Delegates.notNull()
     private val desktopListAdapter: DesktopListAdapter by Delegate()
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val arguments = arguments
+        arguments?.let {
+            position = it.getInt(POSITION)
+            spanCount = it.getInt(SPANCOUNT)
+            appStyle = it.getSerializable(APPSTYLE) as AppStyle
+            iDesktopListAdapter =
+                it.getParcelable<IDesktopListAdapter>(IDESKTOPLISTADAPTER) as IDesktopListAdapter
+            iItemViewInteractive =
+                it.getParcelable<IItemViewInteractive>(IITEMVIEWINTERACTIVE) as IItemViewInteractive
+            listData =
+                it.getParcelableArrayList<IBindDataModel>(MUTABLELIST) as ArrayList<IBindDataModel>
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -50,8 +66,8 @@ class FragmentContent(
         //绑定移动View
         val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
         itemTouchHelper.attachToRecyclerView(rvDesktopList)
-        Log.d(TAG, "onViewCreated: $position")
     }
+
 
     internal fun getAdapter(): DesktopListAdapter? {
         rvDesktopList?.adapter?.let { return it as DesktopListAdapter } ?: let {
@@ -86,16 +102,6 @@ class FragmentContent(
                 }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d(TAG, "onDestroyView: ")
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(TAG, "onDetach: ")
     }
 
     // 委托的类
@@ -198,7 +204,35 @@ class FragmentContent(
 
 
     companion object {
+
+        fun newInstance(
+            position: Int,
+            mutableList: MutableList<IBindDataModel>,
+            spanCount: Int,
+            appStyle: AppStyle,
+            iDesktopListAdapter: IDesktopListAdapter,
+            iItemViewInteractive: IItemViewInteractive
+        ): Fragment {
+            val fragmentContent = FragmentContent()
+            val bundle = Bundle()
+            bundle.putInt(POSITION, position)
+            bundle.putInt(SPANCOUNT, spanCount)
+            bundle.putSerializable(APPSTYLE, appStyle)
+            bundle.putParcelable(IDESKTOPLISTADAPTER, iDesktopListAdapter)
+            bundle.putParcelable(IITEMVIEWINTERACTIVE, iItemViewInteractive)
+            bundle.putParcelableArrayList(MUTABLELIST, mutableList as ArrayList<IBindDataModel>)
+            fragmentContent.arguments = bundle
+            return fragmentContent
+        }
+
+        private val POSITION = "position"
+        private val MUTABLELIST = "mutableList"
+        private val SPANCOUNT = "spanCount"
+        private val APPSTYLE = "appStyle"
+        private val IDESKTOPLISTADAPTER = "iDesktopListAdapter"
+        private val IITEMVIEWINTERACTIVE = "IItemViewInteractive"
         private const val TAG = "FragmentContent"
     }
 }
+
 
