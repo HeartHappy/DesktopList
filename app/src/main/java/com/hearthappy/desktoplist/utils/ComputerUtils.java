@@ -2,6 +2,8 @@ package com.hearthappy.desktoplist.utils;
 
 import android.util.Log;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,4 +141,19 @@ public class ComputerUtils {
         }
         return false;
     }
+
+    /**
+     * 对入参保留最多两位小数(舍弃末尾的0)，如:
+     * 3.345->3.34
+     * 3.40->3.4
+     * 3.0->3
+     */
+    public static String getFloatLimit(float number) {
+        DecimalFormat format = new DecimalFormat("0.#");
+        //未保留小数的舍弃规则，RoundingMode.FLOOR表示直接舍弃。
+        format.setRoundingMode(RoundingMode.FLOOR);
+        return format.format(number);
+    }
+
+
 }

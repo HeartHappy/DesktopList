@@ -2,13 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dp_104"
+    android:layout_height="@dimen/dp_105"
     android:gravity="center"
     android:orientation="vertical"
     tools:ignore="UseCompoundDrawables">
 
-    <ImageView
-        android:id="@+id/ivAppIcon"
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/appIcon"
         android:layout_width="@dimen/dp_52"
         android:layout_height="@dimen/dp_52"
         android:layout_marginBottom="@dimen/dp_4"
@@ -16,7 +16,7 @@
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/tvAppName"
+        android:id="@+id/appName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"

@@ -4,8 +4,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.interfaces.ItemViewListener
 import com.hearthappy.desktoplist.test.DesktopDataModel
-import com.hearthappy.desktoplist.test.DesktopListAdapterImpl
 import com.hearthappy.desktoplist.transformpage.PagerTransformer
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -33,23 +34,22 @@ class MainActivity : AppCompatActivity() {
             when (++transformPagerIndex % 3) {
                 1 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Windmill).notifyChange()
                 2 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.FloatUp).notifyChange()
-                else -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Translate)
-                    .notifyChange()
+                else -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Translate).notifyChange()
             }
             Toast.makeText(this, "切换成功", Toast.LENGTH_SHORT).show()
         }
 
+
         /**
-         * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合  3、实现IDesktopListAdapter接口的适配器
+         * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合
          */
-        dlv.init(3, DesktopDataModel(), DesktopListAdapterImpl())
+        dlv.init(3, DesktopDataModel())
+        dlv.setDesktopAdapterListener(object : ItemViewListener {
+            override fun onClick(currentPagePosition: Int, list: List<IBindDataModel>) {
+                Toast.makeText(this@MainActivity, "position:$currentPagePosition,name:${list[currentPagePosition].getAppName()}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
-
-    //1、获取父容器的MeasureSpec，即：大小和模式，通过MeasureSpec.makeMeasureSpec(大小，模式)
-
-    //2、通过父容器MeasureSpec测量孩子，获取子View的MeasureSpec
-
-    //3、通过子View.measure方法child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
 
     companion object {

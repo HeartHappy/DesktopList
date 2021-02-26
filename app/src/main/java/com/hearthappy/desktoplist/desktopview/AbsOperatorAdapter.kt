@@ -7,32 +7,66 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.desktoplist.appstyle.AppStyle
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
 
+
 /**
  * Created Date 2020/12/31.
  * @author ChenRui
  * ClassDescription:抽象的适配器
  */
-abstract class AbsAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(
-    private val dataModels: List<DB>
-) : RecyclerView.Adapter<VH>() {
+abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(private val dataModels: List<DB>) : RecyclerView.Adapter<VH>() {
     private var implicitPosition = -1 //隐式插入下标，会发生改变
     private var implicitPositionFirstInset = -1 //首次插入隐式位置，不会发生改变
+    var destroyPageAdapterSelPosition: Int = -1
     lateinit var appStyle: AppStyle
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         return createMyViewHolder(parent, viewType)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
+        if (!(hideImplicitPosition(position, holder) || hideDestroyPageSelPosition(position, holder))) {
+            showItemView(holder)
+        }
+        onBindMyViewHolder(holder, position, appStyle)
+    }
+
+
+    /**
+     * 隐藏隐式插入的position
+     * @param position Int
+     * @param holder VH
+     */
+    private fun hideImplicitPosition(position: Int, holder: VH): Boolean {
         if (implicitPosition != -1 && implicitPosition == position) {
             holder.itemView.visibility = View.INVISIBLE
             Log.d(TAG, "onBindViewHolder: 存在隐式View：$implicitPosition")
-        } else {
-            if (holder.itemView.visibility != View.VISIBLE) {
-                Log.d(TAG, "onBindViewHolder: 更新时被无缘无故隐藏")
-                holder.itemView.visibility = View.VISIBLE
-            }
+            return true
         }
-        onBindMyViewHolder(holder, position,appStyle)
+        return false
+    }
+
+    /**
+     * 隐藏销毁页面的选中position
+     * @param position Int
+     * @param holder VH
+     */
+    private fun hideDestroyPageSelPosition(position: Int, holder: VH): Boolean {
+        if (destroyPageAdapterSelPosition != -1 && destroyPageAdapterSelPosition == position) {
+            holder.itemView.visibility = View.INVISIBLE
+            Log.d(TAG, "onBindViewHolder: 隐藏来自销毁页面，经重创后的position:$destroyPageAdapterSelPosition")
+            return true
+        }
+        return false
+    }
+
+    /**
+     * 显示ItemView
+     * @param holder VH
+     */
+    private fun showItemView(holder: VH) {
+        if (holder.itemView.visibility != View.VISIBLE) {
+            Log.d(TAG, "onBindViewHolder: 更新时被无缘无故隐藏")
+            holder.itemView.visibility = View.VISIBLE
+        }
     }
 
     override fun getItemCount(): Int = dataModels.size
@@ -67,6 +101,11 @@ abstract class AbsAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(
         implicitPosition = targetPosition
     }
 
+    fun moveDestroyPageAdapterSelPosition(fromPosition: Int, targetPosition: Int) {
+        this.destroyPageAdapterSelPosition = targetPosition
+        notifyItemMoved(fromPosition, targetPosition)
+    }
+
 
     fun notifyDataChanged() {
         notifyDataSetChanged()
@@ -80,6 +119,13 @@ abstract class AbsAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(
         return implicitPositionFirstInset
     }
 
+    fun resetFromPosition() {
+        val tempPosition = destroyPageAdapterSelPosition
+        destroyPageAdapterSelPosition = -1
+        notifyItemChanged(tempPosition)
+        Log.d(TAG, "resetFromPosition: $tempPosition")
+    }
+
     fun resetImplicitPosition() {
         implicitPosition = -1
         implicitPositionFirstInset = -1
@@ -87,10 +133,7 @@ abstract class AbsAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(
 
     fun getImplicitPositionIsChange(): Boolean {
         if (implicitPosition != -1 && implicitPosition != implicitPositionFirstInset) {
-            Log.d(
-                TAG,
-                "getImplicitPositionIsChange: 隐式位置发生改变$implicitPosition,$implicitPositionFirstInset"
-            )
+            Log.d(TAG, "getImplicitPositionIsChange: 隐式位置发生改变$implicitPosition,$implicitPositionFirstInset")
             return true
         }
         return false
@@ -100,10 +143,7 @@ abstract class AbsAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(
         return implicitPosition > -1
     }
 
-
-    abstract fun createMyViewHolder(
-        parent: ViewGroup, viewType: Int
-    ): VH
+    abstract fun createMyViewHolder(parent: ViewGroup, viewType: Int): VH
 
 
     abstract fun onBindMyViewHolder(holder: VH, position: Int, appStyle: AppStyle)
