@@ -120,6 +120,7 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
     }
 
     fun resetFromPosition() {
+        if (destroyPageAdapterSelPosition == -1) return
         val tempPosition = destroyPageAdapterSelPosition
         destroyPageAdapterSelPosition = -1
         notifyItemChanged(tempPosition)
