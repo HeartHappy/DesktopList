@@ -471,38 +471,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     }
 
     /**
-     * floatView up
-     */
-    private fun floatViewUp() {
-        val floatView = getFloatView(getDecorView())
-        floatView?.let { mfv ->
-            isFirstDispatch = false
-            findReplaceView(mfv)
-            //3、删除临时视图
-            removeFloatView(mfv)
-            fromItemView?.visibility = View.VISIBLE
-            fromItemView = null
-            //1、如果时销毁后创建了，直接重置原隐藏position，并显示 2、如果是销毁状态，那么需要在创建时根据destroyFragmentPosition重置后的position来区分处理
-            if (fromPageIsCreateAlterDestroy(fromPagePosition) && destroyFragmentPosition != -1) {
-                Log.d(TAG, "floatViewUp: from page is create alter destroy,need reset hide position")
-                requestDesktopListAdapter { adapter ->
-                    adapter.resetFromPosition()
-                }
-            }
-            destroyFragmentPosition = -1
-            Log.d(TAG, "floatViewUp--->remove float View")
-        }
-    }
-
-    /**
-     * remove floatView
-     * @param mfv View
-     */
-    private fun removeFloatView(mfv: View) {
-        getDecorView().removeView(mfv)
-    }
-
-    /**
      * 查找替换View位置
      */
     private fun findReplaceView(mfv: View) {
@@ -528,6 +496,48 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             }
         }
     }
+
+
+    /**
+     * floatView up
+     */
+    private fun floatViewUp() {
+        val floatView = getFloatView(getDecorView())
+        floatView?.let { mfv ->
+            isFirstDispatch = false
+            findReplaceView(mfv)
+            //3、删除临时视图
+            removeFloatView(mfv)
+            fromItemView?.visibility = View.VISIBLE
+            fromItemView = null
+            //1、如果时销毁后创建了，直接重置原隐藏position，并显示 2、如果是销毁状态，那么需要在创建时根据destroyFragmentPosition重置后的position来区分处理
+            releaseThePageCreatedAfterDestroy()
+            Log.d(TAG, "floatViewUp--->remove float View")
+        }
+    }
+
+
+    /**
+     * 如果存在销毁后创建的页面则释放
+     */
+    private fun releaseThePageCreatedAfterDestroy() {
+        if (fromPageIsCreateAlterDestroy(fromPagePosition) && destroyFragmentPosition != -1) {
+            destroyFragmentPosition = -1
+            Log.d(TAG, "floatViewUp: from page is create alter destroy,need reset hide position")
+            requestDesktopListAdapter { adapter ->
+                adapter.resetFromPosition()
+            }
+        }
+    }
+
+    /**
+     * remove floatView
+     * @param mfv View
+     */
+    private fun removeFloatView(mfv: View) {
+        getDecorView().removeView(mfv)
+    }
+
 
     /**
      * floating View released in cross page
