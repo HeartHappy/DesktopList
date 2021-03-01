@@ -24,6 +24,10 @@
             android:id="@+id/btnSwitchTransformPage"
             style="@style/style_navigation"
             android:text="切换侧滑动画" />
+        <Button
+            android:id="@+id/btnRefresh"
+            style="@style/style_navigation"
+            android:text="刷新" />
     </androidx.appcompat.widget.Toolbar>
 
     <com.hearthappy.desktoplist.desktopview.DesktopListView

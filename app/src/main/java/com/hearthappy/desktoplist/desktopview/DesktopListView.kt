@@ -29,9 +29,14 @@ import com.hearthappy.desktoplist.appstyle.AppStyle
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
 import com.hearthappy.desktoplist.interfaces.IDesktopDataModel
 import com.hearthappy.desktoplist.interfaces.ItemViewListener
+import com.hearthappy.desktoplist.model.dao.DesktopDataDao
+import com.hearthappy.desktoplist.model.table.DesktopDataTable
 import com.hearthappy.desktoplist.transformpage.PagerTransformer
 import com.hearthappy.desktoplist.utils.ComputerUtils
 import com.hearthappy.desktoplist.utils.ViewOperateUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.jetbrains.annotations.NotNull
 import kotlin.math.abs
 
@@ -75,7 +80,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     //用户的数据源
     private lateinit var userListData: MutableList<MutableList<IBindDataModel>>
-    private lateinit var desktopListData: MutableList<MutableList<IBindDataModel>>
+    private var desktopListData: MutableList<MutableList<IBindDataModel>> = mutableListOf()
 
     private var isMessageSend = false //消息是否已发送,另代表是否在边界
     private var myHandler: Handler = Handler {
@@ -140,6 +145,17 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             }
         }
     }
+
+    private inline fun execute(updatePageAdapter: Boolean, crossinline block: (desktopDataDao: DesktopDataDao) -> Unit) {
+        GlobalScope.launch {
+            val desktopDataDao = getApplication().database.desktopDataDao()
+            block(desktopDataDao)
+            if (updatePageAdapter) {
+                initPageUI()
+            }
+        }
+    }
+
 
     /**
      * 尾递归查找TargetIndex
@@ -217,6 +233,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         notifyPageStyleSetChange()
     }
 
+    fun notifyUpdateCurrentPage(){
+        currentFragmentContent?.getAdapter()?.notifyDataChanged()
+    }
+
     /**
      * 通知页面样式发生改变
      */
@@ -226,27 +246,131 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     private fun initPageData() {
+        val remoteDataSources = iDesktopDataModel.dataSources()
+        val dataSize = iDesktopDataModel.dataSize()
+        execute(true) { dao ->
+            val localDataSource = dao.queryAll()
+            Log.d(TAG, "initPageData: ${localDataSource.size},${iDesktopDataModel.dataSize()},${checkSetIsSame(localDataSource, remoteDataSources)}")
+            if (localDataSource.isEmpty()) {
+                Log.d(TAG, "initPageData:使用网络数据： 本地数据为空，并初次保存至本地")
+                remoteDataConversion(remoteDataSources, dataSize)
+                firstWriteLocalDataSource(dao)
+                //如果本地与网络数据源相同
+            } else if (localDataSource.size == dataSize && checkSetIsSame(localDataSource, remoteDataSources)) {
+                Log.d(TAG, "initPageData: 使用本地已改变数据：本地存储数据与网络请求数据相同")
+                localDataConversion(dao, localDataSource)
+                //如果本地与网络不相同，并且本地已经有数据，需要同步更新
+            } else if (!checkSetIsSame(localDataSource, remoteDataSources) && localDataSource.isNotEmpty()) {
+                //网络数据增加了
+                Log.d(TAG, "initPageData: 网络数据与本地数据不同，需要同步")
+                /*if (dataSize > localDataSource.size) {
+                    val newInsetDataList= mutableListOf<IBindDataModel>()
+                    remoteDataSources.forEach { remote->
+                        localDataSource.forEach { local->
+                            if (!remote.getAppName().contains(local.title)) {
+                                newInsetDataList.add(remote)
+                            }
+                        }
+                    }
+                    if(newInsetDataList.size>0){
+
+                    }
+                    //网络数据减少了
+                }*/
+
+            }
+        }
+    }
+
+
+    /**
+     * 网络数据转换
+     * @param dataSources List<IBindDataModel>
+     * @param dataSize Int
+     */
+    private fun remoteDataConversion(dataSources: List<IBindDataModel>, dataSize: Int) {
         /**
          * 延迟加载是否被初始化
          */
         if (!::userListData.isInitialized) {
-            userListData = ComputerUtils.split(iDesktopDataModel.dataSources(), singlePageShowCount)
+            userListData = ComputerUtils.split(dataSources, singlePageShowCount)
         }
-        if (!::desktopListData.isInitialized) {
-            desktopListData = mutableListOf()
-        }
-        totalPage = ComputerUtils.getAllPage(iDesktopDataModel.dataSize(), this.singlePageShowCount)
-        //创建成员变量存储，改变数据时无需改变用户传入的数据源
-        dataConversion()
-        adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
-    }
-
-    private fun dataConversion() {
+        totalPage = ComputerUtils.getAllPage(dataSize, this.singlePageShowCount)
+        Log.d(TAG, "dataConversion: 网络数据转换成每页数据，并初次写入本地")
         for (i in 0 until totalPage) {
             val dataModels = userListData[i]
             desktopListData.add(dataModels)
         }
     }
+
+
+    /**
+     * 本地数据转换
+     * @param dao DesktopDataDao
+     * @param queryDesktopData List<DesktopDataTable>
+     */
+    private fun localDataConversion(dao: DesktopDataDao, queryDesktopData: List<DesktopDataTable>) {
+        var queryMaxNumberOfPage = dao.queryMaxNumberOfPage()
+        totalPage = ++queryMaxNumberOfPage
+        for (i in 0 until totalPage) {
+            //根据页码划分
+            val partition = queryDesktopData.partition { it.pageNumber == i }
+            //得到划分的页面数据
+            val dividePageData = partition.first
+            Log.d(TAG, "localDataConversion ---->: ${dividePageData.size}")
+            dividePageData.forEach {
+                Log.d(TAG, "localDataConversion: ${it.title},page:${it.pageNumber}")
+            }
+            desktopListData.add(dividePageData.toMutableList())
+        }
+        Log.d(TAG, "readLocalDataSource: $queryMaxNumberOfPage")
+    }
+
+    private fun firstWriteLocalDataSource(dao: DesktopDataDao) {
+        Log.d(TAG, "saveLocalDataSource: 插入全部数据")
+        for (i in 0 until totalPage) {
+            val numberPerPage = desktopListData[i].size
+            for (j in 0 until numberPerPage) {
+                dao.insert(DesktopDataTable(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i))
+            }
+        }
+    }
+
+
+    /**
+     * 处理本地数据源
+     */
+    private fun updateLocalDataSource() {
+        execute(false) { dao ->
+            Log.d(TAG, "updateLocalDataSource: 更新数据改变")
+            for (i in 0 until totalPage) {
+                val numberPerPage = desktopListData[i].size
+                Log.d(TAG, "updateLocalDataSource number per Page----->: $numberPerPage")
+                for (j in 0 until numberPerPage) {
+                    Log.d(TAG, "updateLocalDataSource: ${desktopListData[i][j].getAppName()},page:$i")
+                    dao.update(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i)
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 使用list自带的sort方法先进性排序，然后转成toString去判断两个集合是否相等
+     * 方法6
+     */
+    private fun checkSetIsSame(list1: List<IBindDataModel>, list2: List<IBindDataModel>): Boolean {
+        val list1Str = list1.toMutableList().sortBy { it.getAppName() }.toString()
+        val list2Str = list2.toMutableList().sortBy { it.getAppName() }.toString()
+        return list1Str == list2Str
+    }
+
+    private fun initPageUI() {
+        GlobalScope.launch(Dispatchers.Main) {
+            adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
+        }
+    }
+
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         try {
@@ -291,6 +415,15 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             return false
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(ev: MotionEvent?): Boolean {
+        if (fromPagePosition == currentItem && fromItemView != null) {
+            return true
+        }
+        return super.onTouchEvent(ev)
     }
 
 
@@ -415,15 +548,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     }
 
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        if (fromPagePosition == currentItem && fromItemView != null) {
-            return true
-        }
-        return super.onTouchEvent(ev)
-    }
-
-
     /**
      * 创建浮动View
      */
@@ -513,6 +637,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             //1、如果时销毁后创建了，直接重置原隐藏position，并显示 2、如果是销毁状态，那么需要在创建时根据destroyFragmentPosition重置后的position来区分处理
             releaseThePageCreatedAfterDestroy()
             Log.d(TAG, "floatViewUp--->remove float View")
+            //            updateLocalDataSource()
         }
     }
 
@@ -546,7 +671,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @param targetIndex Int
      */
     private fun floatViewReleasedInCrossPage(it: DesktopListAdapter, targetFragment: FragmentContent, targetIndex: Int) {
-        Log.d(TAG, "findReplaceView: 跨界面拖拽")
+        Log.d(TAG, "floatViewReleasedInCrossPage")
         //如果已经存在隐式
         if (it.isImplicitInset()) {
             if (it.getImplicitPositionIsChange()) {
@@ -563,11 +688,14 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         desktopListData[fromPagePosition].removeAt(fromAdapterPosition)
         //刷新原界面视图
         requestFromFragmentContent { ffc ->
+            Log.d(TAG, "floatViewReleasedInCrossPage: request update view")
             if (ffc.isAdded) {
                 postDelayed({
-                    Log.d(TAG, "findReplaceView: 刷新原视图")
+                    Log.d(TAG, "floatViewReleasedInCrossPage: request update view succeed")
                     requestDesktopListAdapter { it.notifyDataChanged() }
                 }, 200)
+            } else {
+                Log.d(TAG, "floatViewReleasedInCrossPage: request update view failed ,not add fragment to activity")
             }
         }
     }
@@ -792,6 +920,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return activity.window?.decorView as FrameLayout
     }
 
+    private fun getApplication(): MyApplication {
+        return context.applicationContext as MyApplication
+    }
+
     fun setDesktopAdapterListener(itemViewListener: ItemViewListener) {
         this.itemViewListener = itemViewListener
     }
@@ -854,6 +986,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
                 override fun onViewCreated(position: Int) {
                     Log.d(ILifeCycle_TAG, "onViewCreated: $position")
+                    currentFragmentContent?.getAdapter()?.notifyDataChanged()
                 }
 
                 override fun onDestroyView(position: Int) {

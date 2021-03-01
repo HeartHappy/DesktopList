@@ -59,7 +59,6 @@ class FragmentContent : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        iLifeCycle.onViewCreated(position)
         val gridLayoutManager = GridLayoutManager(context, spanCount)
         rvDesktopList.layoutManager = gridLayoutManager
         //涉及数据绑定View的交给用户自定义
@@ -76,6 +75,7 @@ class FragmentContent : Fragment() {
         //绑定移动View
         val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
         itemTouchHelper.attachToRecyclerView(rvDesktopList)
+        iLifeCycle.onViewCreated(position)
     }
 
     override fun onDestroyView() {

@@ -39,6 +39,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "切换成功", Toast.LENGTH_SHORT).show()
         }
 
+        btnRefresh.setOnClickListener {
+            dlv.notifyUpdateCurrentPage()
+        }
+
 
         /**
          * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合

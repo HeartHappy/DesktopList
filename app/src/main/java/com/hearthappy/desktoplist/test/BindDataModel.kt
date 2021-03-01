@@ -8,7 +8,8 @@ import kotlinx.android.parcel.Parcelize
  * @author ChenRui
  * ClassDescription:
  */
-@Parcelize class BindDataModel(private var url: String?, private var title: String?) : IBindDataModel {
+@Parcelize
+class BindDataModel(private var url: String?, private var title: String?) : IBindDataModel {
 
     override fun getAppUrl(): String {
         return url.toString()
