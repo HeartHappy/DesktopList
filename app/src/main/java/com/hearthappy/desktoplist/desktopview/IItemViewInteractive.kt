@@ -26,7 +26,7 @@ interface IItemViewInteractive : Parcelable {
     /**
      * 选中View在当前界面移动
      */
-    fun onMove()
+    fun onMove(fromPosition: Int, toPosition: Int)
 
 
 }

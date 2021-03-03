@@ -2,7 +2,6 @@ package com.hearthappy.desktoplist.desktopview
 
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,7 +42,6 @@ class FragmentContent : Fragment() {
             destroyPageAdapterSelPosition = it.getInt(DESTROY_PAGE_ADAPTER_SEL_POSITION)
             spanCount = it.getInt(SPAN_COUNT)
             verticalSpacing = it.getFloat(VERTICAL_SPACING)
-            Log.d(TAG, "onCreate verticalSpacing: ${verticalSpacing.toInt()}")
             appStyle = it.getSerializable(APP_STYLE) as AppStyle
             iItemViewInteractive = it.getParcelable<IItemViewInteractive>(I_ITEM_VIEW_INTERACTIVE) as IItemViewInteractive
             iLifeCycle = it.getParcelable<ILifeCycle>(I_Life_Cycle) as ILifeCycle
@@ -118,7 +116,7 @@ class FragmentContent : Fragment() {
             adapter?.let {
                 if (it.isImplicitInset()) {
                     it.implicitRemove()
-                    Log.d(TAG, "setUserVisibleHint: 不显示了，并且当前页面存在隐式View，执行删除")
+                    //                    Log.d(TAG, "setUserVisibleHint: 不显示了，并且当前页面存在隐式View，执行删除")
                 }
             }
         }
@@ -130,7 +128,7 @@ class FragmentContent : Fragment() {
             DesktopListAdapter(context, listData, iItemViewInteractive).run {
                 appStyle = this@FragmentContent.appStyle
                 this.destroyPageAdapterSelPosition = this@FragmentContent.destroyPageAdapterSelPosition
-                Log.d(TAG, "getValue: 初始化：$position,$destroyPageAdapterSelPosition")
+                //                Log.d(TAG, "getValue: 初始化：$position,$destroyPageAdapterSelPosition")
                 return this
             }
         }
@@ -159,7 +157,7 @@ class FragmentContent : Fragment() {
             //            replaceLocal(fromPosition, toPosition, listData)
             rvDesktopList?.adapter?.run {
                 //                Log.d("FragmentContent", "onMove: fromPosition:$fromPosition,toPosition:$toPosition")
-                iItemViewInteractive.onMove()
+                iItemViewInteractive.onMove(fromPosition,toPosition)
                 notifyItemMoved(fromPosition, toPosition)
             }
             return true
@@ -233,7 +231,6 @@ class FragmentContent : Fragment() {
         private const val APP_STYLE = "appStyle"
         private const val I_ITEM_VIEW_INTERACTIVE = "IItemViewInteractive"
         private const val I_Life_Cycle = "ILifeCycle"
-        private const val TAG = "FragmentContent"
 
     }
 }

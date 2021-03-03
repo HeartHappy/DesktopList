@@ -101,6 +101,25 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     /**
+     * 划分集合根据索引为条件
+     * @receiver Iterable<T>
+     * @param predicate Function2<Int, T, Boolean>
+     * @return Pair<List<T>, List<T>>
+     */
+    private inline fun <T> Iterable<T>.partitionByIndex(predicate: (Int) -> Boolean): Pair<List<T>, List<T>> {
+        val first = ArrayList<T>()
+        val second = ArrayList<T>()
+        forEachIndexed { index, element ->
+            if (predicate(index)) {
+                first.add(element)
+            } else {
+                second.add(element)
+            }
+        }
+        return Pair(first, second)
+    }
+
+    /**
      * 请求FragmentContent操作
      * @param block [@kotlin.ExtensionFunctionType] Function1<FragmentContent, Unit>
      */
@@ -133,7 +152,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
-
     /**
      * 请求DesktopListRecyclerView操作
      * @param block [@kotlin.ExtensionFunctionType] Function1<RecyclerView, Unit>
@@ -151,11 +169,11 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             val desktopDataDao = getApplication().database.desktopDataDao()
             block(desktopDataDao)
             if (updatePageAdapter) {
+                Log.d(TAG, "execute: 初始化适配器")
                 initPageUI()
             }
         }
     }
-
 
     /**
      * 尾递归查找TargetIndex
@@ -233,7 +251,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         notifyPageStyleSetChange()
     }
 
-    fun notifyUpdateCurrentPage(){
+    fun notifyUpdateCurrentPage() {
         currentFragmentContent?.getAdapter()?.notifyDataChanged()
     }
 
@@ -250,34 +268,31 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         val dataSize = iDesktopDataModel.dataSize()
         execute(true) { dao ->
             val localDataSource = dao.queryAll()
-            Log.d(TAG, "initPageData: ${localDataSource.size},${iDesktopDataModel.dataSize()},${checkSetIsSame(localDataSource, remoteDataSources)}")
+            Log.d(TAG, "initPageData: ${localDataSource.size},${iDesktopDataModel.dataSize()}")
             if (localDataSource.isEmpty()) {
                 Log.d(TAG, "initPageData:使用网络数据： 本地数据为空，并初次保存至本地")
-                remoteDataConversion(remoteDataSources, dataSize)
-                firstWriteLocalDataSource(dao)
+                conversionRemoteData(remoteDataSources, dataSize)
+                executeFirstInset(dao)
                 //如果本地与网络数据源相同
-            } else if (localDataSource.size == dataSize && checkSetIsSame(localDataSource, remoteDataSources)) {
-                Log.d(TAG, "initPageData: 使用本地已改变数据：本地存储数据与网络请求数据相同")
-                localDataConversion(dao, localDataSource)
-                //如果本地与网络不相同，并且本地已经有数据，需要同步更新
-            } else if (!checkSetIsSame(localDataSource, remoteDataSources) && localDataSource.isNotEmpty()) {
-                //网络数据增加了
-                Log.d(TAG, "initPageData: 网络数据与本地数据不同，需要同步")
-                /*if (dataSize > localDataSource.size) {
-                    val newInsetDataList= mutableListOf<IBindDataModel>()
-                    remoteDataSources.forEach { remote->
-                        localDataSource.forEach { local->
-                            if (!remote.getAppName().contains(local.title)) {
-                                newInsetDataList.add(remote)
-                            }
-                        }
+            } else {
+                val localAndRemoteMap = localAndRemoteMap(localDataSource, remoteDataSources)
+                var queryMaxNumberOfPage = dao.queryMaxNumberOfPage()
+                totalPage = ++queryMaxNumberOfPage
+                if (localDataSource.size == dataSize && localAndRemoteMap.first == localAndRemoteMap.second) {
+                    Log.d(TAG, "initPageData: 使用本地数据库数据：本地存储数据与网络请求数据相同")
+                    conversionLocalData(localDataSource)
+                    //如果本地与网络不相同，并且本地已经有数据，需要同步更新
+                } else if (localAndRemoteMap.first != localAndRemoteMap.second) {
+                    //网络数据增加了
+                    val conversionDifferentData = conversionDifferentData(localDataSource, remoteDataSources, localAndRemoteMap.first, localAndRemoteMap.second)
+                    if (conversionDifferentData.first) {
+                        insetLocalDataSource(dao, conversionDifferentData.second)
+                        conversionLocalData(dao.queryAll())
+                    } else {
+                        executeDelete(dao, conversionDifferentData.second)
+                        conversionLocalData(dao.queryAll())
                     }
-                    if(newInsetDataList.size>0){
-
-                    }
-                    //网络数据减少了
-                }*/
-
+                }
             }
         }
     }
@@ -288,7 +303,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @param dataSources List<IBindDataModel>
      * @param dataSize Int
      */
-    private fun remoteDataConversion(dataSources: List<IBindDataModel>, dataSize: Int) {
+    private fun conversionRemoteData(dataSources: List<IBindDataModel>, dataSize: Int) {
         /**
          * 延迟加载是否被初始化
          */
@@ -306,65 +321,167 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     /**
      * 本地数据转换
-     * @param dao DesktopDataDao
      * @param queryDesktopData List<DesktopDataTable>
      */
-    private fun localDataConversion(dao: DesktopDataDao, queryDesktopData: List<DesktopDataTable>) {
-        var queryMaxNumberOfPage = dao.queryMaxNumberOfPage()
-        totalPage = ++queryMaxNumberOfPage
+    private fun conversionLocalData(queryDesktopData: List<DesktopDataTable>) {
         for (i in 0 until totalPage) {
             //根据页码划分
             val partition = queryDesktopData.partition { it.pageNumber == i }
             //得到划分的页面数据
-            val dividePageData = partition.first
-            Log.d(TAG, "localDataConversion ---->: ${dividePageData.size}")
+            val dividePageData = partition.first.sortedBy { it.pageAdapterPosition }
+            Log.d(TAG, "conversionLocalData ---->: ${dividePageData.size}")
             dividePageData.forEach {
-                Log.d(TAG, "localDataConversion: ${it.title},page:${it.pageNumber}")
+                Log.d(TAG, "conversionLocalData: ${it.title},page:${it.pageNumber},position:${it.pageAdapterPosition}")
             }
             desktopListData.add(dividePageData.toMutableList())
         }
-        Log.d(TAG, "readLocalDataSource: $queryMaxNumberOfPage")
+        Log.d(TAG, "conversionLocalData queryMaxNumberOfPage--->: $totalPage")
     }
 
-    private fun firstWriteLocalDataSource(dao: DesktopDataDao) {
-        Log.d(TAG, "saveLocalDataSource: 插入全部数据")
+
+    /**
+     * 转换提取出不同数据
+     * @param localList List<IBindDataModel>
+     * @param remoteList List<IBindDataModel>
+     */
+    private fun conversionDifferentData(localList: List<IBindDataModel>, remoteList: List<IBindDataModel>, localMap: List<String>, remoteMap: List<String>): Pair<Boolean, List<IBindDataModel>> {
+        val differentDataModel = mutableListOf<IBindDataModel>()
+        val isInset = remoteMap.size > localMap.size
+        Log.d(TAG, "conversionDifferentData: 是否插入否则删除：$isInset")
+        if (remoteMap.size > localMap.size) {
+            remoteMap.forEach { remote ->
+                if (!localMap.contains(remote)) {
+                    Log.d(TAG, "conversionDifferentData:本地没有：$remote")
+                    val filter = remoteList.filter { it.getAppName() == remote }
+                    differentDataModel.add(filter[0])
+                }
+            }
+        } else {
+            localMap.forEach { local ->
+                if (!remoteMap.contains(local)) {
+                    Log.d(TAG, "checkSetIsSame: 远程没有：$local")
+                    val filter = localList.filter { it.getAppName() == local }
+                    differentDataModel.add(filter[0])
+                }
+            }
+        }
+        return Pair(isInset, differentDataModel)
+    }
+
+
+    /**
+     * 存在删除后，显示数据还是之前的数据问题
+     * @param deleteDataList List<IBindDataModel>
+     */
+    private fun executeDelete(dao: DesktopDataDao, deleteDataList: List<IBindDataModel>) {
+        deleteDataList.forEachIndexed { _, deleteData ->
+            val deleteByName = dao.deleteByName(deleteData.getAppName())
+            Log.d(TAG, "deleteLocalDataSource: 同步删除:${deleteData.getAppName()},是否成功:$deleteByName")
+        }
+    }
+
+    // TODO: 2021/3/2 存在排序问题  ，新增页出现问题
+    private fun insetLocalDataSource(dao: DesktopDataDao, insetDataList: List<IBindDataModel>) {
+        //获取最后一页的显示数量，是否允许增加
+        val lastPageIndex = totalPage - 1
+        val lastPageShowNumber = dao.queryPageShowNumber(lastPageIndex).size
+        Log.d(TAG, "insetLocalDataSource: 需要插入数据库：${insetDataList.size}条,最后一页:$lastPageIndex,显示了：$lastPageShowNumber")
+        //最后一页没有空间，新建页面添加数据
+        if (lastPageShowNumber == singlePageShowCount) {
+            Log.d(TAG, "insetLocalDataSource: 最后一页没有空间，新建页面添加数据")
+            executeSyncInsetByNewPage(dao, insetDataList)
+        } else {
+            //屏幕空间够插入所有新增
+            if (lastPageShowNumber + insetDataList.size <= singlePageShowCount) {
+                Log.d(TAG, "insetLocalDataSource: 屏幕空间足够插入所有新增")
+                executeSyncInset(dao, insetDataList, lastPageIndex)
+                //屏幕只够插入部分新增，还需要新建页面
+            } else {
+                //当前页面最多插入数量
+                val maxInsetNumber = singlePageShowCount - lastPageShowNumber
+                Log.d(TAG, "insetLocalDataSource: 当前页面最多插入数量:$maxInsetNumber")
+                //划分新增数据
+                val partitionData = insetDataList.partitionByIndex { index -> index < maxInsetNumber }
+                executeSyncInset(dao, partitionData.first, lastPageIndex)
+                executeSyncInsetByNewPage(dao, partitionData.second)
+            }
+        }
+    }
+
+    /**
+     * 首次将网络数据写入本地数据库
+     * @param dao DesktopDataDao
+     */
+    private fun executeFirstInset(dao: DesktopDataDao) {
+        Log.d(TAG, "saveLocalDataSource: inset all data")
         for (i in 0 until totalPage) {
             val numberPerPage = desktopListData[i].size
             for (j in 0 until numberPerPage) {
-                dao.insert(DesktopDataTable(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i))
+                dao.insert(DesktopDataTable(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i, pageAdapterPosition = j))
             }
         }
     }
 
 
     /**
-     * 处理本地数据源
+     * 更新本地数据库
      */
-    private fun updateLocalDataSource() {
+    private fun executeUpdate() {
         execute(false) { dao ->
             Log.d(TAG, "updateLocalDataSource: 更新数据改变")
             for (i in 0 until totalPage) {
                 val numberPerPage = desktopListData[i].size
                 Log.d(TAG, "updateLocalDataSource number per Page----->: $numberPerPage")
                 for (j in 0 until numberPerPage) {
-                    Log.d(TAG, "updateLocalDataSource: ${desktopListData[i][j].getAppName()},page:$i")
-                    dao.update(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i)
+                    Log.d(TAG, "updateLocalDataSource: ${desktopListData[i][j].getAppName()},page:$i,position:$j")
+                    dao.update(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i, pageAdapterPosition = j)
                 }
             }
         }
     }
 
 
-    /**
-     * 使用list自带的sort方法先进性排序，然后转成toString去判断两个集合是否相等
-     * 方法6
-     */
-    private fun checkSetIsSame(list1: List<IBindDataModel>, list2: List<IBindDataModel>): Boolean {
-        val list1Str = list1.toMutableList().sortBy { it.getAppName() }.toString()
-        val list2Str = list2.toMutableList().sortBy { it.getAppName() }.toString()
-        return list1Str == list2Str
+    private fun executeSyncInsetByNewPage(dao: DesktopDataDao, insetDataList: List<IBindDataModel>) {
+        ++totalPage
+        val newLastPageIndex = totalPage - 1
+        insetDataList.forEachIndexed { index, insetData ->
+            Log.d(TAG, "executeSyncInsetByNewPage sync inset add page: ${insetData.getAppName()}")
+            dao.insert(DesktopDataTable(title = insetData.getAppName(), url = insetData.getAppUrl(), pageNumber = newLastPageIndex, pageAdapterPosition = index))
+        }
     }
 
+    /**
+     * 执行同步插入
+     * @param insetDataList List<IBindDataModel>
+     * @param lastPageIndex Int
+     */
+    private fun executeSyncInset(dao: DesktopDataDao, insetDataList: List<IBindDataModel>, lastPageIndex: Int) {
+        insetDataList.forEachIndexed { _, insetData ->
+            Log.d(TAG, "executeSyncInset: sync inset:${insetData.getAppName()}")
+            val lastPageShowList = dao.queryPageShowNumber(lastPageIndex)
+            dao.insert(DesktopDataTable(title = insetData.getAppName(), url = insetData.getAppUrl(), pageNumber = lastPageIndex, pageAdapterPosition = lastPageShowList.size - 1))
+        }
+    }
+
+
+    /**
+     * 集合根据appName排序后，在进行map映射新的集合
+     * @param localList List<IBindDataModel>
+     * @param remoteList List<IBindDataModel>
+     * @return Pair<List<String>, List<String>>
+     */
+    private fun localAndRemoteMap(localList: List<IBindDataModel>, remoteList: List<IBindDataModel>): Pair<List<String>, List<String>> {
+        val localListSort = localList.toMutableList().sortedBy { it.getAppName() }
+        val remoteListSort = remoteList.toMutableList().sortedBy { it.getAppName() }
+        val localMap = localListSort.map { it.getAppName() }
+        val remoteMap = remoteListSort.map { it.getAppName() }
+        return Pair(localMap, remoteMap)
+    }
+
+
+    /**
+     * 切换主线程再进行适配器的初始化
+     */
     private fun initPageUI() {
         GlobalScope.launch(Dispatchers.Main) {
             adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
@@ -428,7 +545,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     /**
-     * 处理跨界面移动静止：
+     * 处理跨界面移动：
      * @param it MotionEvent
      * @param mfv View
      */
@@ -458,12 +575,13 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     /**
      *
-     * 处理销毁界面移动静止：
+     * 处理销毁界面移动：
      * 当前页面经过拖拽翻页后销毁，又拖拽至原界面。
      * 存在问题：销毁页面经过创建后没有移动效果，并且原选中View又显示在页面上
      */
     private fun handlerDestroyPageMove(motionEvent: MotionEvent, mfv: View) {
-        if (fromPageIsCreateAlterDestroy(fromPagePosition) && destroyFragmentPosition != -1) {
+        //        Log.d(TAG, "handlerDestroyPageMove: ${fromPageIsCreateAlterDestroy(fromPagePosition)},fromPagePosition:$fromPagePosition,destroyFragmentPosition:$destroyFragmentPosition")
+        if (fromPageIsCreateAlterDestroy(fromPagePosition) && destroyFragmentPosition != -1 && fromPagePosition == destroyFragmentPosition) {
             requestFromFragmentContent { ffc ->
                 ffc.getAdapter()?.let { adapter ->
                     //如果为静止状态
@@ -611,6 +729,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     //2、松开时，拖拽至其他页面，并且其他页面是满的。此时targetIndex=-1
                     targetIndex == -1 -> {
                         Toast.makeText(context, "当前屏幕没有空间", Toast.LENGTH_SHORT).show()
+                        requestFromFragmentContent { ffc -> ffc.getAdapter()?.notifyDataChanged() }
                     }
                     //3、松开时，跨界面
                     fromPagePosition != currentItem -> {
@@ -637,10 +756,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             //1、如果时销毁后创建了，直接重置原隐藏position，并显示 2、如果是销毁状态，那么需要在创建时根据destroyFragmentPosition重置后的position来区分处理
             releaseThePageCreatedAfterDestroy()
             Log.d(TAG, "floatViewUp--->remove float View")
-            //            updateLocalDataSource()
+            executeUpdate()
         }
     }
-
 
     /**
      * 如果存在销毁后创建的页面则释放
@@ -662,7 +780,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private fun removeFloatView(mfv: View) {
         getDecorView().removeView(mfv)
     }
-
 
     /**
      * floating View released in cross page
@@ -884,7 +1001,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     }
                     requestDesktopListRecyclerView(fc) { rv ->
                         val targetIndex = findIntersectViewPosition(itemCount = ic, recyclerView = rv, moveViewRect = moveViewRect)
-                        Log.d(TAG, "getTargetIndexEfficient: $targetIndex,$ic")
+                        Log.d(TAG, "getTargetIndexEfficient:targetIndex: $targetIndex,itemCount:$ic")
                         if (targetIndex == ic) {
                             return ic
                         } else if (targetIndex != -1) {
@@ -938,7 +1055,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
         override fun getItem(position: Int): Fragment {
             var fromPageAdapterPosition = -1
-            if (fromPageIsDestroy(position) && position == fromPagePosition && destroyFragmentPosition != -1) {
+            if (fromPageIsDestroy(position) && position == fromPagePosition && destroyFragmentPosition != -1 && isExistFloatView()) {
                 fromPageAdapterPosition = fromAdapterPosition
                 //                Log.d(TAG, "getItem:1 创建:${fromPageIsDestroy(position)},position:$position,fromPageAdapterPosition:$fromPageAdapterPosition")
             }
@@ -959,7 +1076,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     itemViewListener?.onClick(position, list)
                 }
 
-                override fun onMove() {
+                override fun onMove(fromPosition: Int, toPosition: Int) {
                 }
 
                 override fun describeContents(): Int {
@@ -977,29 +1094,28 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     } else {
                         fragmentLifecycleState[position] = FragmentLifeCycleState.CREATE
                     }
-                    Log.d(ILifeCycle_TAG, "onCreate: $position,$lifeCycleState")
+                    //                    Log.d(ILifeCycle_TAG, "onCreate: $position,$lifeCycleState")
                 }
 
                 override fun onCreateView(position: Int) {
-                    Log.d(ILifeCycle_TAG, "onCreateView: $position")
+                    //                    Log.d(ILifeCycle_TAG, "onCreateView: $position")
                 }
 
                 override fun onViewCreated(position: Int) {
-                    Log.d(ILifeCycle_TAG, "onViewCreated: $position")
+                    //                    Log.d(ILifeCycle_TAG, "onViewCreated: $position")
                     currentFragmentContent?.getAdapter()?.notifyDataChanged()
                 }
 
                 override fun onDestroyView(position: Int) {
-                    Log.d(ILifeCycle_TAG, "onDestroyView: $position")
+                    //                    Log.d(ILifeCycle_TAG, "onDestroyView: $position")
                 }
 
                 override fun onDestroy(position: Int) {
                     fragmentLifecycleState[position] = FragmentLifeCycleState.DESTROY
-                    Log.d(ILifeCycle_TAG, "onDestroy: $position")
+                    //                    Log.d(ILifeCycle_TAG, "onDestroy: $position")
                     if (fromPagePosition == position && isExistFloatView()) {
-                        // TODO: 2021/2/26 区分移动状态对其赋值
                         destroyFragmentPosition = position
-                        Log.d(TAG, "selectViewFromPageDestroy: old interface destroy:$position,${isExistFloatView()}")
+                        //                        Log.d(TAG, "selectViewFromPageDestroy: old interface destroy:$position,${isExistFloatView()}")
                     }
                 }
 
@@ -1036,7 +1152,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     companion object {
         private const val TAG = "DesktopListView"
-        private const val ILifeCycle_TAG = "ILifeCycle"
+        //        private const val ILifeCycle_TAG = "ILifeCycle"
 
         private const val ACTION_PREV_PAGE = 1
         private const val ACTION_PREV_NEXT = 2
