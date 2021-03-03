@@ -12,9 +12,4 @@ interface IDesktopDataModel<out DB : IBindDataModel> {
      */
     fun dataSources(): List<DB>
 
-    /**
-     * @return Int 返回数据集合的数量
-     */
-    fun dataSize(): Int
-
 }

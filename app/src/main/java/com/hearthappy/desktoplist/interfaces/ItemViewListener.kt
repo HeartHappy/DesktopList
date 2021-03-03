@@ -6,5 +6,5 @@ package com.hearthappy.desktoplist.interfaces
  * ClassDescription:
  */
 interface ItemViewListener {
-    fun onClick(currentPagePosition: Int, list: List<IBindDataModel>)
+    fun onClick(position: Int, list: List<IBindDataModel>)
 }

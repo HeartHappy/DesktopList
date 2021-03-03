@@ -79,7 +79,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     //用户的数据源
-    private lateinit var userListData: MutableList<MutableList<IBindDataModel>>
     private var desktopListData: MutableList<MutableList<IBindDataModel>> = mutableListOf()
 
     private var isMessageSend = false //消息是否已发送,另代表是否在边界
@@ -210,7 +209,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 1、初始化数据
      * 2、初始化总页数：根据数据的总数量和每页显示数量（默认每页显示15个）
      */
-    fun init(@IntRange(from = 1, to = 5) spanCount: Int, @NotNull iDesktopList: IDesktopDataModel<IBindDataModel>) {
+    fun init(@IntRange(from = 1, to = 5) spanCount: Int=3, @NotNull iDesktopList: IDesktopDataModel<IBindDataModel>) {
         if (height <= 0) {
             postDelayed({ init(spanCount, iDesktopList) }, 200)
             return
@@ -224,9 +223,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         val rowsCount = height / itemHeightSpan
         singlePageShowCount = rowsCount * spanCount
         verticalSpacing = (itemHeightSpan * (precisionRowsCount % rowsCount) / rowsCount / 2)
-        Log.d(TAG, "initProperty: 每页显示:$singlePageShowCount,行数:$rowsCount,height:$height,itemHeight:${
-            resources.getDimensionPixelOffset(R.dimen.dp_105)
-        },精确行数:$precisionRowsCount,垂直偏移:$verticalSpacing")
+        Log.d(TAG, "initProperty: 每页显示:$singlePageShowCount,行数:$rowsCount,height:$height,itemHeight:${resources.getDimensionPixelOffset(R.dimen.dp_105)},精确行数:$precisionRowsCount,垂直偏移:$verticalSpacing")
         initPageData()
     }
 
@@ -265,20 +262,19 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     private fun initPageData() {
         val remoteDataSources = iDesktopDataModel.dataSources()
-        val dataSize = iDesktopDataModel.dataSize()
         execute(true) { dao ->
             val localDataSource = dao.queryAll()
-            Log.d(TAG, "initPageData: ${localDataSource.size},${iDesktopDataModel.dataSize()}")
+            Log.d(TAG, "initPageData: ${localDataSource.size},${remoteDataSources.size}")
             if (localDataSource.isEmpty()) {
                 Log.d(TAG, "initPageData:使用网络数据： 本地数据为空，并初次保存至本地")
-                conversionRemoteData(remoteDataSources, dataSize)
+                conversionRemoteData(remoteDataSources)
                 executeFirstInset(dao)
                 //如果本地与网络数据源相同
             } else {
                 val localAndRemoteMap = localAndRemoteMap(localDataSource, remoteDataSources)
                 var queryMaxNumberOfPage = dao.queryMaxNumberOfPage()
                 totalPage = ++queryMaxNumberOfPage
-                if (localDataSource.size == dataSize && localAndRemoteMap.first == localAndRemoteMap.second) {
+                if (localDataSource.size == remoteDataSources.size && localAndRemoteMap.first == localAndRemoteMap.second) {
                     Log.d(TAG, "initPageData: 使用本地数据库数据：本地存储数据与网络请求数据相同")
                     conversionLocalData(localDataSource)
                     //如果本地与网络不相同，并且本地已经有数据，需要同步更新
@@ -301,21 +297,13 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     /**
      * 网络数据转换
      * @param dataSources List<IBindDataModel>
-     * @param dataSize Int
      */
-    private fun conversionRemoteData(dataSources: List<IBindDataModel>, dataSize: Int) {
-        /**
-         * 延迟加载是否被初始化
-         */
-        if (!::userListData.isInitialized) {
-            userListData = ComputerUtils.split(dataSources, singlePageShowCount)
-        }
-        totalPage = ComputerUtils.getAllPage(dataSize, this.singlePageShowCount)
+    private fun conversionRemoteData(dataSources: List<IBindDataModel>) {
+        //将集合按照数量分块，最后一块较小
+        val block = dataSources.chunked(singlePageShowCount) { chunk -> desktopListData.add(chunk.toMutableList()) }
+        //计算总页数
+        totalPage = block.size
         Log.d(TAG, "dataConversion: 网络数据转换成每页数据，并初次写入本地")
-        for (i in 0 until totalPage) {
-            val dataModels = userListData[i]
-            desktopListData.add(dataModels)
-        }
     }
 
 
@@ -324,7 +312,16 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @param queryDesktopData List<DesktopDataTable>
      */
     private fun conversionLocalData(queryDesktopData: List<DesktopDataTable>) {
-        for (i in 0 until totalPage) {
+        val groupBySort = queryDesktopData.groupBy { it.pageNumber }.toSortedMap()
+        totalPage = groupBySort.size
+        groupBySort.forEach { group ->
+            //得到划分的页面数据
+            val dividePageData = group.value.sortedBy { it.pageAdapterPosition }
+            desktopListData.add(dividePageData.toMutableList())
+            dividePageData.forEach { Log.d(TAG, "groupBySort conversionLocalData: ${it.title},page:${it.pageNumber},position:${it.pageAdapterPosition}") }
+        }
+
+        /*for (i in 0 until totalPage) {
             //根据页码划分
             val partition = queryDesktopData.partition { it.pageNumber == i }
             //得到划分的页面数据
@@ -334,8 +331,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 Log.d(TAG, "conversionLocalData: ${it.title},page:${it.pageNumber},position:${it.pageAdapterPosition}")
             }
             desktopListData.add(dividePageData.toMutableList())
-        }
-        Log.d(TAG, "conversionLocalData queryMaxNumberOfPage--->: $totalPage")
+        }*/
     }
 
 
@@ -343,6 +339,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 转换提取出不同数据
      * @param localList List<IBindDataModel>
      * @param remoteList List<IBindDataModel>
+     * @return Pair(true:插入、false:删除,查询出不同的数据)
      */
     private fun conversionDifferentData(localList: List<IBindDataModel>, remoteList: List<IBindDataModel>, localMap: List<String>, remoteMap: List<String>): Pair<Boolean, List<IBindDataModel>> {
         val differentDataModel = mutableListOf<IBindDataModel>()
@@ -352,16 +349,14 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             remoteMap.forEach { remote ->
                 if (!localMap.contains(remote)) {
                     Log.d(TAG, "conversionDifferentData:本地没有：$remote")
-                    val filter = remoteList.filter { it.getAppName() == remote }
-                    differentDataModel.add(filter[0])
+                    remoteList.find { it.getAppName() == remote }?.let { differentDataModel.add(it) }
                 }
             }
         } else {
             localMap.forEach { local ->
                 if (!remoteMap.contains(local)) {
                     Log.d(TAG, "checkSetIsSame: 远程没有：$local")
-                    val filter = localList.filter { it.getAppName() == local }
-                    differentDataModel.add(filter[0])
+                    localList.find { it.getAppName() == local }?.let { differentDataModel.add(it) }
                 }
             }
         }
@@ -380,12 +375,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
-    // TODO: 2021/3/2 存在排序问题  ，新增页出现问题
+    // TODO: 2021/3/2 存在排序问题 和 批量插入创建多页的问题
     private fun insetLocalDataSource(dao: DesktopDataDao, insetDataList: List<IBindDataModel>) {
         //获取最后一页的显示数量，是否允许增加
         val lastPageIndex = totalPage - 1
         val lastPageShowNumber = dao.queryPageShowNumber(lastPageIndex).size
-        Log.d(TAG, "insetLocalDataSource: 需要插入数据库：${insetDataList.size}条,最后一页:$lastPageIndex,显示了：$lastPageShowNumber")
+        Log.d(TAG, "insetLocalDataSource: 需要插入数据库：${insetDataList.size}条,最后一页索引:$lastPageIndex,显示了：$lastPageShowNumber")
         //最后一页没有空间，新建页面添加数据
         if (lastPageShowNumber == singlePageShowCount) {
             Log.d(TAG, "insetLocalDataSource: 最后一页没有空间，新建页面添加数据")
@@ -440,7 +435,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
-
+    // TODO: 2021/3/3 存在创建多页的问题 ，目前只支持创建一页
+    /**
+     * 执行插入时，新建页面
+     * @param dao DesktopDataDao
+     * @param insetDataList List<IBindDataModel>
+     */
     private fun executeSyncInsetByNewPage(dao: DesktopDataDao, insetDataList: List<IBindDataModel>) {
         ++totalPage
         val newLastPageIndex = totalPage - 1

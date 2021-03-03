@@ -67,7 +67,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "INS")) //初始化后新增的
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "DNS")) //初始化后新增的第2条
         mutableListOf.add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "MAC"))
-//
+
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "YDG")) //批量新增
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "YDJ"))
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "KPL"))
@@ -82,10 +82,5 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
     override fun dataSources(): List<BindDataModel> {
         return initDataSources()
     }
-
-    override fun dataSize(): Int {
-        return mutableListOf.size
-    }
-
 
 }

@@ -49,8 +49,8 @@ class MainActivity : AppCompatActivity() {
          */
         dlv.init(3, DesktopDataModel())
         dlv.setDesktopAdapterListener(object : ItemViewListener {
-            override fun onClick(currentPagePosition: Int, list: List<IBindDataModel>) {
-                Toast.makeText(this@MainActivity, "position:$currentPagePosition,name:${list[currentPagePosition].getAppName()}", Toast.LENGTH_SHORT).show()
+            override fun onClick(position: Int, list: List<IBindDataModel>) {
+                Toast.makeText(this@MainActivity, "position:$position,name:${list[position].getAppName()}", Toast.LENGTH_SHORT).show()
             }
         })
     }
