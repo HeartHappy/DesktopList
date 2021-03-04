@@ -265,9 +265,14 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     /**
      *  通知抖动
      */
-    private fun notifyJitter() {
+    private fun notifyJitter(isJitter: Boolean) {
         requestTargetFragmentContent { tfc ->
-            tfc.getAdapter()?.notifyDataChanged()
+            Log.d(TAG, "notifyJitter: 通知刷新position:${tfc.position},isJitter:$isJitter")
+            if (isJitter) {
+                tfc.getAdapter()?.notifyDataChanged()
+            } else {
+                tfc.getAdapter()?.notifyDataChanged()
+            }
         }
     }
 
@@ -576,7 +581,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 处理来自页面移动
      */
     private fun handlerFromPageMove(motionEvent: MotionEvent, mfv: View) {
-//        Log.d(TAG, "handlerFromPageMove:fromPagePosition:$fromPagePosition")
+        //        Log.d(TAG, "handlerFromPageMove:fromPagePosition:$fromPagePosition")
         //        if (fromPageIsCreateAlterDestroy(fromPagePosition) && destroyFragmentPosition != -1 && fromPagePosition == destroyFragmentPosition) {
         requestFromFragmentContent { ffc ->
             ffc.getAdapter()?.let { adapter ->
@@ -730,7 +735,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             it.getAdapter()?.hideFromPosition(adapterPosition)
             fromAdapterPosition = adapterPosition
         }
-        //        notifyJitter()
+        notifyJitter(true)
     }
 
 
@@ -766,7 +771,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             Log.d(TAG, "onReleaseSelectItemView--->remove float View")
             executeSyncUpdate()
         }
-        //        notifyJitter()
+        notifyJitter(false)
     }
 
     /**
@@ -1085,7 +1090,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 }
 
                 override fun onResume(position: Int) {
-                    //                    notifyJitter()
+
                 }
 
                 override fun onDestroyView(position: Int) {
@@ -1093,6 +1098,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 }
 
                 override fun onDestroy(position: Int) {
+                }
+
+                override fun onUserVisibleHint(visibleToUser: Boolean, position: Int) {
+                    Log.d(TAG, "onUserVisibleHint: $visibleToUser,$position")
                 }
 
 
@@ -1107,11 +1116,13 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
 
         override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
+            Log.d(TAG, "setPrimaryItem: $position")
             currentFragmentContent = `object` as FragmentContent
             super.setPrimaryItem(container, position, `object`)
         }
 
         fun getInstantFragment(): Fragment? {
+            Log.d(TAG, "getInstantFragment: ")
             return currentFragmentContent
         }
     }

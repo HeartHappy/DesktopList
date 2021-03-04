@@ -2,7 +2,6 @@ package com.hearthappy.desktoplist.desktopview
 
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +23,7 @@ import kotlin.properties.Delegates
  * ClassDescription:动态创建的分页Fragment
  */
 class FragmentContent : Fragment() {
-    private var position by Delegates.notNull<Int>()
+    var position by Delegates.notNull<Int>()
     private var destroyPageAdapterSelPosition by Delegates.notNull<Int>() //默认：-1,如果遇到销毁页面，则是原选中适配器position,
     private var spanCount: Int by Delegates.notNull()
     private var verticalSpacing: Float = 0f
@@ -118,14 +117,14 @@ class FragmentContent : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        Log.d(TAG, "onResume: $position")
+        //        Log.d(TAG, "onResume: $position")
         if (::iLifeCycle.isInitialized) {
             iLifeCycle.onResume(position)
         }
     }
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
-//        Log.d(TAG, "setUserVisibleHint: $isVisibleToUser")
+
         if (!isVisibleToUser) {
             //如果隐藏了检测是否存在隐式插入的ItemView
             getAdapter()?.let {
@@ -134,6 +133,9 @@ class FragmentContent : Fragment() {
                     //                    Log.d(TAG, "setUserVisibleHint: 不显示了，并且当前页面存在隐式View，执行删除")
                 }
             }
+        }
+        if (::iLifeCycle.isInitialized) {
+            iLifeCycle.onUserVisibleHint(isVisibleToUser, position)
         }
     }
 

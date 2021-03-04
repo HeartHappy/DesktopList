@@ -1,6 +1,7 @@
 package com.hearthappy.desktoplist.desktopview
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,9 +45,15 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
         holder.itemView.setOnClickListener {
             iItemViewInteractive.onClick(position, list)
         }
-
-//        setJitterAnimator(holder.appIcon)
-
+        if (parent is DesktopListView) {
+            if (parent.isExistFloatView()) {
+                setJitterAnimator(holder.appIcon, true)
+                Log.d(TAG, "onBindMyViewHolder: 开始抖动:$position")
+            } else {
+                setJitterAnimator(holder.appIcon, false)
+                Log.d(TAG, "onBindMyViewHolder: 禁止抖动:$position")
+            }
+        }
     }
 
 

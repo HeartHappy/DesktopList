@@ -20,5 +20,7 @@ interface ILifeCycle : Parcelable {
 
     fun onDestroy(position: Int)
 
+    fun onUserVisibleHint(visibleToUser: Boolean, position: Int)
+
 
 }

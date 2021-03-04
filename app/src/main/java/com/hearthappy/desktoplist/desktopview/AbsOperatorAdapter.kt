@@ -21,6 +21,7 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
     private var implicitPositionFirstInset = -1 //首次插入隐式位置，不会发生改变
     var fromPosition: Int = -1
     lateinit var appStyle: AppStyle
+    private var isJitterAnimator=false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         return createMyViewHolder(parent, viewType)
@@ -78,15 +79,20 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
      * 设置抖动动画
      * @param view View
      */
-    internal fun setJitterAnimator(view: View) {
+    internal fun setJitterAnimator(view: View,isStart:Boolean) {
         val ofFloat = ObjectAnimator.ofFloat(view, "rotation", 0f, 10f, 0f, -10f, 0f)
-        ofFloat.apply {
-            interpolator = LinearInterpolator()
-            duration = 700
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ValueAnimator.RESTART
-            start()
+        if(isStart){
+            ofFloat.apply {
+                interpolator = LinearInterpolator()
+                duration = 700
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ValueAnimator.RESTART
+                start()
+            }
+        }else{
+            ofFloat.end()
         }
+
     }
 
     override fun getItemCount(): Int = dataModels.size
