@@ -14,7 +14,11 @@ interface ILifeCycle : Parcelable {
 
     fun onViewCreated(position: Int)
 
+    fun onResume(position: Int)
+
     fun onDestroyView(position: Int)
 
     fun onDestroy(position: Int)
+
+
 }

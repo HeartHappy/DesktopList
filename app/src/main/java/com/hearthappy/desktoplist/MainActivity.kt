@@ -23,18 +23,18 @@ class MainActivity : AppCompatActivity() {
 
         btnSwitchAppStyle.setOnClickListener {
             when (++styleIndex % 3) {
-                1 -> dlv.appStyle(AppStyle.Rounded(24)).notifyChange()
-                2 -> dlv.appStyle(AppStyle.Circle).notifyChange()
-                else -> dlv.appStyle(AppStyle.NotStyle).notifyChange()
+                1 -> dlv.appStyle(AppStyle.Rounded(24)).notifyChangeStyle()
+                2 -> dlv.appStyle(AppStyle.Circle).notifyChangeStyle()
+                else -> dlv.appStyle(AppStyle.NotStyle).notifyChangeStyle()
             }
             Toast.makeText(this, "切换成功", Toast.LENGTH_SHORT).show()
         }
 
         btnSwitchTransformPage.setOnClickListener {
             when (++transformPagerIndex % 3) {
-                1 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Windmill).notifyChange()
-                2 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.FloatUp).notifyChange()
-                else -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Translate).notifyChange()
+                1 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Windmill).notifyChangeStyle()
+                2 -> dlv.transformAnimation(PagerTransformer.AnimSpecies.FloatUp).notifyChangeStyle()
+                else -> dlv.transformAnimation(PagerTransformer.AnimSpecies.Translate).notifyChangeStyle()
             }
             Toast.makeText(this, "切换成功", Toast.LENGTH_SHORT).show()
         }
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合
          */
-        dlv.init(3, DesktopDataModel())
+        dlv.init(iDesktopList=DesktopDataModel())
         dlv.setDesktopAdapterListener(object : ItemViewListener {
             override fun onClick(position: Int, list: List<IBindDataModel>) {
                 Toast.makeText(this@MainActivity, "position:$position,name:${list[position].getAppName()}", Toast.LENGTH_SHORT).show()

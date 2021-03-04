@@ -1,9 +1,11 @@
 package com.hearthappy.desktoplist.desktopview
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewParent
 import android.widget.TextView
 import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.recyclerview.widget.RecyclerView
@@ -18,7 +20,7 @@ import kotlinx.android.synthetic.main.item_app_list.view.*
  * @author ChenRui
  * ClassDescription:内部桌面适配器逻辑处理类，供用户实现
  */
-class DesktopListAdapter(private val context: Context?, private val list: List<IBindDataModel>, private val iItemViewInteractive: IItemViewInteractive) : AbsOperatorAdapter<DesktopListAdapter.ViewHolder, IBindDataModel>(list) {
+class DesktopListAdapter(private val context: Context?, private val list: List<IBindDataModel>, private val iItemViewInteractive: IItemViewInteractive, private val parent: ViewParent) : AbsOperatorAdapter<DesktopListAdapter.ViewHolder, IBindDataModel>(list) {
 
 
     override fun createMyViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -43,11 +45,22 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
         holder.itemView.setOnClickListener {
             iItemViewInteractive.onClick(position, list)
         }
+       /* if (parent is DesktopListView) {
+            val existFloatView = parent.isExistFloatView()
+            Log.d(TAG, "onBindMyViewHolder: $existFloatView")
+            if (existFloatView) {
+                holder.appIcon.animate().rotation(10f).start()
+            }
+        }*/
     }
 
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appText: TextView = itemView.appName
         val appIcon: ImageFilterView = itemView.appIcon
+    }
+
+    companion object {
+        private const val TAG = "DesktopListAdapter"
     }
 }

@@ -2,6 +2,7 @@ package com.hearthappy.desktoplist.desktopview
 
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,6 @@ import com.hearthappy.desktoplist.interfaces.IBindDataModel
 import kotlinx.android.synthetic.main.fragment_tab_main.*
 import java.util.*
 import kotlin.properties.Delegates
-import kotlin.reflect.KProperty
 
 
 /**
@@ -30,8 +30,8 @@ class FragmentContent : Fragment() {
     private var verticalSpacing: Float = 0f
     private var appStyle: AppStyle by Delegates.notNull()
     private var iItemViewInteractive: IItemViewInteractive by Delegates.notNull()
-    private var iLifeCycle: ILifeCycle by Delegates.notNull()
-    private val desktopListAdapter: DesktopListAdapter by Delegate()
+    private lateinit var iLifeCycle: ILifeCycle
+    private var desktopListAdapter: DesktopListAdapter? = null
     private var listData: MutableList<IBindDataModel> by Delegates.notNull()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,8 +57,15 @@ class FragmentContent : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val gridLayoutManager = GridLayoutManager(context, spanCount)
-        rvDesktopList.layoutManager = gridLayoutManager
+
+        rvDesktopList.layoutManager = GridLayoutManager(context, spanCount)
+
+        desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
+            appStyle = this@FragmentContent.appStyle
+            this.destroyPageAdapterSelPosition = this@FragmentContent.destroyPageAdapterSelPosition
+            //                Log.d(TAG, "getValue: 初始化：$position,$destroyPageAdapterSelPosition")
+        }
+
         //涉及数据绑定View的交给用户自定义
         rvDesktopList.adapter = desktopListAdapter
         rvDesktopList.itemAnimator?.changeDuration = 0
@@ -109,27 +116,23 @@ class FragmentContent : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume: $position")
+        if (::iLifeCycle.isInitialized) {
+            iLifeCycle.onResume(position)
+        }
+    }
+
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        Log.d(TAG, "setUserVisibleHint: $isVisibleToUser")
         if (!isVisibleToUser) {
             //如果隐藏了检测是否存在隐式插入的ItemView
-            val adapter = getAdapter()
-            adapter?.let {
+            getAdapter()?.let {
                 if (it.isImplicitInset()) {
                     it.implicitRemove()
                     //                    Log.d(TAG, "setUserVisibleHint: 不显示了，并且当前页面存在隐式View，执行删除")
                 }
-            }
-        }
-    }
-
-    // 委托的类
-    inner class Delegate {
-        internal operator fun getValue(thisRef: Any?, property: KProperty<*>): DesktopListAdapter {
-            DesktopListAdapter(context, listData, iItemViewInteractive).run {
-                appStyle = this@FragmentContent.appStyle
-                this.destroyPageAdapterSelPosition = this@FragmentContent.destroyPageAdapterSelPosition
-                //                Log.d(TAG, "getValue: 初始化：$position,$destroyPageAdapterSelPosition")
-                return this
             }
         }
     }
@@ -157,7 +160,7 @@ class FragmentContent : Fragment() {
             //            replaceLocal(fromPosition, toPosition, listData)
             rvDesktopList?.adapter?.run {
                 //                Log.d("FragmentContent", "onMove: fromPosition:$fromPosition,toPosition:$toPosition")
-                iItemViewInteractive.onMove(fromPosition,toPosition)
+                iItemViewInteractive.onMove(fromPosition, toPosition)
                 notifyItemMoved(fromPosition, toPosition)
             }
             return true
@@ -223,6 +226,7 @@ class FragmentContent : Fragment() {
             return fragmentContent
         }
 
+        private const val TAG = "FragmentContent"
         private const val POSITION = "position"
         private const val DESTROY_PAGE_ADAPTER_SEL_POSITION = "destroyPageAdapterSelPosition"
         private const val MUTABLE_LIST = "mutableList"

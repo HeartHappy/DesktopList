@@ -209,9 +209,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 1、初始化数据
      * 2、初始化总页数：根据数据的总数量和每页显示数量（默认每页显示15个）
      */
-    fun init(@IntRange(from = 1, to = 5) spanCount: Int = 3, @NotNull iDesktopList: IDesktopDataModel<IBindDataModel>) {
+    fun init(@NotNull iDesktopList: IDesktopDataModel<IBindDataModel>, @IntRange(from = 3, to = 4) spanCount: Int = 4) {
         if (height <= 0) {
-            postDelayed({ init(spanCount, iDesktopList) }, 200)
+            postDelayed({ init(iDesktopList, spanCount) }, 200)
             return
         }
 
@@ -244,19 +244,28 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         return this
     }
 
-    fun notifyChange() {
-        notifyPageStyleSetChange()
+
+    /**
+     * 通知页面样式发生改变
+     */
+    fun notifyChangeStyle() {
+        this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
     }
 
+    /**
+     * 通知刷新当前页面
+     */
     fun notifyUpdateCurrentPage() {
         currentFragmentContent?.getAdapter()?.notifyDataChanged()
     }
 
     /**
-     * 通知页面样式发生改变
+     *  通知抖动
      */
-    private fun notifyPageStyleSetChange() {
-        this.adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager)
+    private fun notifyJitter() {
+        requestTargetFragmentContent { tfc ->
+            tfc.getAdapter()?.notifyDataChanged()
+        }
     }
 
 
@@ -496,7 +505,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     }
                     MotionEvent.ACTION_UP -> {
                         return if (isExistFloatView()) {
-                            floatViewUp()
+                            onReleaseSelectItemView()
                             false
                         } else {
                             Log.d(TAG, "dispatchTouchEvent: not floatView up")
@@ -519,7 +528,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        if (fromPagePosition == currentItem && fromItemView != null) {
+        try {
+            if (fromPagePosition == currentItem && fromItemView != null) {
+                return true
+            }
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
             return true
         }
         return super.onTouchEvent(ev)
@@ -724,9 +738,36 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
 
     /**
-     * floatView up
+     * 点击ItemView
+     * @param position Int
+     * @param list List<IBindDataModel>
      */
-    private fun floatViewUp() {
+    private fun onClickItemView(position: Int, list: List<IBindDataModel>) {
+        itemViewListener?.onClick(position, list)
+    }
+
+    /**
+     * 选中ItemView
+     * @param selectView View?
+     * @param adapterPosition Int
+     * @param fragmentContent FragmentContent
+     */
+    private fun onSelectItemView(selectView: View?, adapterPosition: Int, fragmentContent: FragmentContent) {
+        selectView?.visibility = INVISIBLE
+        //隐藏原有视图
+        fromPagePosition = currentItem
+        fromAdapterPosition = adapterPosition
+        fromFragmentContent = fragmentContent
+        this@DesktopListView.fromItemView = selectView
+        createFloatView(selectView)
+//        notifyJitter()
+    }
+
+
+    /**
+     * 松开选中View
+     */
+    private fun onReleaseSelectItemView() {
         val floatView = getFloatView(getDecorView())
         floatView?.let { mfv ->
             isFirstDispatch = false
@@ -737,9 +778,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             fromItemView = null
             //1、如果时销毁后创建了，直接重置原隐藏position，并显示 2、如果是销毁状态，那么需要在创建时根据destroyFragmentPosition重置后的position来区分处理
             releaseThePageCreatedAfterDestroy()
-            Log.d(TAG, "floatViewUp--->remove float View")
+            Log.d(TAG, "onReleaseSelectItemView--->remove float View")
             executeSyncUpdate()
         }
+//        notifyJitter()
     }
 
     /**
@@ -1004,7 +1046,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 是否存在FloatView
      * @return Boolean
      */
-    private fun isExistFloatView(): Boolean {
+    fun isExistFloatView(): Boolean {
         val decorView = getDecorView()
         getFloatView(decorView)?.let {
             return true
@@ -1032,7 +1074,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @return
      */
     @Suppress("DEPRECATION")
-    inner class DesktopAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
+    internal inner class DesktopAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
 
         override fun getItem(position: Int): Fragment {
             var fromPageAdapterPosition = -1
@@ -1042,19 +1084,14 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             }
             //创建时拿取数据
             return FragmentContent.newInstance(position, fromPageAdapterPosition, desktopListData[position], spanCount, verticalSpacing, appStyle, object : IItemViewInteractive {
+
                 override fun selectViewRect(selectView: View?, adapterPosition: Int, fragmentContent: FragmentContent) {
-                    selectView?.visibility = View.INVISIBLE
-                    //隐藏原有视图
-                    fromPagePosition = currentItem
-                    fromAdapterPosition = adapterPosition
-                    fromFragmentContent = fragmentContent
-                    this@DesktopListView.fromItemView = selectView
-                    createFloatView(selectView)
+                    onSelectItemView(selectView, adapterPosition, fragmentContent)
                     //                    Log.d(TAG, "selectItemView:current page:${currentItem},interface result： $selectView,select position:$adapterPosition")
                 }
 
                 override fun onClick(position: Int, list: List<IBindDataModel>) {
-                    itemViewListener?.onClick(position, list)
+                    onClickItemView(position, list)
                 }
 
                 override fun onMove(fromPosition: Int, toPosition: Int) {
@@ -1087,6 +1124,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                     currentFragmentContent?.getAdapter()?.notifyDataChanged()
                 }
 
+                override fun onResume(position: Int) {
+//                    notifyJitter()
+                }
+
                 override fun onDestroyView(position: Int) {
                     //                    Log.d(ILifeCycle_TAG, "onDestroyView: $position")
                 }
@@ -1099,6 +1140,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         //                        Log.d(TAG, "selectViewFromPageDestroy: old interface destroy:$position,${isExistFloatView()}")
                     }
                 }
+
 
                 override fun describeContents(): Int = 0
 
@@ -1119,6 +1161,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             return currentFragmentContent
         }
     }
+
 
     enum class FragmentLifeCycleState {
         CREATE, //已创建
