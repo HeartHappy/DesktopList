@@ -1,8 +1,11 @@
 package com.hearthappy.desktoplist.desktopview
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.desktoplist.appstyle.AppStyle
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
@@ -16,14 +19,15 @@ import com.hearthappy.desktoplist.interfaces.IBindDataModel
 abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDataModel>(private val dataModels: List<DB>) : RecyclerView.Adapter<VH>() {
     private var implicitPosition = -1 //隐式插入下标，会发生改变
     private var implicitPositionFirstInset = -1 //首次插入隐式位置，不会发生改变
-    var destroyPageAdapterSelPosition: Int = -1
+    var fromPosition: Int = -1
     lateinit var appStyle: AppStyle
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         return createMyViewHolder(parent, viewType)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        if (!(hideImplicitPosition(position, holder) || hideDestroyPageSelPosition(position, holder))) {
+        if (!(hideImplicitPosition(position, holder) || hideFromPosition(position, holder))) {
             showItemView(holder)
         }
         onBindMyViewHolder(holder, position, appStyle)
@@ -49,10 +53,10 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
      * @param position Int
      * @param holder VH
      */
-    private fun hideDestroyPageSelPosition(position: Int, holder: VH): Boolean {
-        if (destroyPageAdapterSelPosition != -1 && destroyPageAdapterSelPosition == position) {
+    private fun hideFromPosition(position: Int, holder: VH): Boolean {
+        if (fromPosition != -1 && fromPosition == position) {
             holder.itemView.visibility = View.INVISIBLE
-            Log.d(TAG, "onBindViewHolder: 隐藏来自销毁页面，经重创后的position:$destroyPageAdapterSelPosition")
+            Log.d(TAG, "onBindViewHolder: 隐藏来自销毁页面，经重创后的position:$fromPosition")
             return true
         }
         return false
@@ -64,8 +68,24 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
      */
     private fun showItemView(holder: VH) {
         if (holder.itemView.visibility != View.VISIBLE) {
-            Log.d(TAG, "onBindViewHolder: 更新时被无缘无故隐藏")
+            Log.d(TAG, "onBindViewHolder: not fromPosition and implicitPosition")
             holder.itemView.visibility = View.VISIBLE
+        }
+    }
+
+
+    /**
+     * 设置抖动动画
+     * @param view View
+     */
+    internal fun setJitterAnimator(view: View) {
+        val ofFloat = ObjectAnimator.ofFloat(view, "rotation", 0f, 10f, 0f, -10f, 0f)
+        ofFloat.apply {
+            interpolator = LinearInterpolator()
+            duration = 700
+            repeatCount = ObjectAnimator.INFINITE
+            repeatMode = ValueAnimator.RESTART
+            start()
         }
     }
 
@@ -101,9 +121,21 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
         implicitPosition = targetPosition
     }
 
-    fun moveDestroyPageAdapterSelPosition(fromPosition: Int, targetPosition: Int) {
-        this.destroyPageAdapterSelPosition = targetPosition
+    fun moveFromPosition(fromPosition: Int, targetPosition: Int) {
+        this.fromPosition = targetPosition
         notifyItemMoved(fromPosition, targetPosition)
+    }
+
+    fun hideFromPosition(position: Int) {
+        this.fromPosition = position
+        notifyItemChanged(fromPosition)
+    }
+
+    fun showFromPosition() {
+        if (fromPosition == -1) return
+        val tempPosition = fromPosition
+        this.fromPosition = -1
+        notifyItemChanged(tempPosition)
     }
 
 
@@ -119,13 +151,6 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
         return implicitPositionFirstInset
     }
 
-    fun resetFromPosition() {
-        if (destroyPageAdapterSelPosition == -1) return
-        val tempPosition = destroyPageAdapterSelPosition
-        destroyPageAdapterSelPosition = -1
-        notifyItemChanged(tempPosition)
-        Log.d(TAG, "resetFromPosition: $tempPosition")
-    }
 
     fun resetImplicitPosition() {
         implicitPosition = -1

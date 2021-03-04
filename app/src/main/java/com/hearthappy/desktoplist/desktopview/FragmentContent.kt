@@ -62,7 +62,7 @@ class FragmentContent : Fragment() {
 
         desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
             appStyle = this@FragmentContent.appStyle
-            this.destroyPageAdapterSelPosition = this@FragmentContent.destroyPageAdapterSelPosition
+            this.fromPosition = this@FragmentContent.destroyPageAdapterSelPosition
             //                Log.d(TAG, "getValue: 初始化：$position,$destroyPageAdapterSelPosition")
         }
 
@@ -118,14 +118,14 @@ class FragmentContent : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume: $position")
+//        Log.d(TAG, "onResume: $position")
         if (::iLifeCycle.isInitialized) {
             iLifeCycle.onResume(position)
         }
     }
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
-        Log.d(TAG, "setUserVisibleHint: $isVisibleToUser")
+//        Log.d(TAG, "setUserVisibleHint: $isVisibleToUser")
         if (!isVisibleToUser) {
             //如果隐藏了检测是否存在隐式插入的ItemView
             getAdapter()?.let {
@@ -136,6 +136,7 @@ class FragmentContent : Fragment() {
             }
         }
     }
+
 
     private inner class ItemTouchHelperCallback : ItemTouchHelper.Callback() {
         override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
@@ -152,8 +153,7 @@ class FragmentContent : Fragment() {
 
         override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
 
-
-            //得到当拖拽的viewHolder的Position
+            /*//得到当拖拽的viewHolder的Position
             val fromPosition = viewHolder.adapterPosition
             //拿到当前拖拽到的item的viewHolder
             val toPosition = target.adapterPosition
@@ -162,7 +162,7 @@ class FragmentContent : Fragment() {
                 //                Log.d("FragmentContent", "onMove: fromPosition:$fromPosition,toPosition:$toPosition")
                 iItemViewInteractive.onMove(fromPosition, toPosition)
                 notifyItemMoved(fromPosition, toPosition)
-            }
+            }*/
             return true
         }
 
