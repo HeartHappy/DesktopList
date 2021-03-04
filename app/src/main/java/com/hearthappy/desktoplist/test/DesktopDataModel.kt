@@ -56,8 +56,10 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "QGH"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "AGC"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "RMB"))
+        mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "BBQ"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "SQL"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "ODL"))
+        mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "ADB"))
         mutableListOf.add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "NEW"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/Up1IvFCJPhmwHed.jpg", "NOT"))
         mutableListOf.add(BindDataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "TOP"))
@@ -67,7 +69,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "INS")) //初始化后新增的
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "DNS")) //初始化后新增的第2条
         mutableListOf.add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "MAC"))
-
+//
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "YDG")) //批量新增
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "YDJ"))
         mutableListOf.add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "KPL"))
