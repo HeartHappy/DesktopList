@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hearthappy.desktoplist.R
 import com.hearthappy.desktoplist.appstyle.AppStyle
+import com.hearthappy.desktoplist.desktopview.weiget.JitterImageView
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
 import kotlinx.android.synthetic.main.item_app_list.view.*
 
@@ -47,10 +48,12 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
         }
         if (parent is DesktopListView) {
             if (parent.isExistFloatView()) {
-                setJitterAnimator(holder.appIcon, true)
+                holder.appIcon.start()
+//                setJitterAnimator(holder.appIcon,position, true)
                 Log.d(TAG, "onBindMyViewHolder: 开始抖动:$position")
             } else {
-                setJitterAnimator(holder.appIcon, false)
+                holder.appIcon.end()
+//                setJitterAnimator(holder.appIcon, position, false)
                 Log.d(TAG, "onBindMyViewHolder: 禁止抖动:$position")
             }
         }
@@ -59,7 +62,7 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appText: TextView = itemView.appName
-        val appIcon: ImageFilterView = itemView.appIcon
+        val appIcon: JitterImageView = itemView.appIcon
     }
 
     companion object {

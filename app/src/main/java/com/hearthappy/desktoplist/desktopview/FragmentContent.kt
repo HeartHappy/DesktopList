@@ -103,17 +103,6 @@ class FragmentContent : Fragment() {
         return rvDesktopList
     }
 
-    fun replaceLocal(fromPosition: Int, toPosition: Int, listData: MutableList<*>) {
-        if (fromPosition < toPosition) {
-            for (i in fromPosition until toPosition) {
-                Collections.swap(listData, i, i + 1)
-            }
-        } else {
-            for (i in fromPosition downTo toPosition + 1) {
-                Collections.swap(listData, i, i - 1)
-            }
-        }
-    }
 
     override fun onResume() {
         super.onResume()

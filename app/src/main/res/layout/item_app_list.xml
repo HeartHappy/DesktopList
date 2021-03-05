@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:ignore="UseCompoundDrawables">
 
-    <androidx.constraintlayout.utils.widget.ImageFilterView
+    <com.hearthappy.desktoplist.desktopview.weiget.JitterImageView
         android:id="@+id/appIcon"
         android:layout_width="@dimen/dp_52"
         android:layout_height="@dimen/dp_52"
