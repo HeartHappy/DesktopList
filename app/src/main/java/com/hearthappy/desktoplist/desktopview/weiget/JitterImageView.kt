@@ -36,4 +36,8 @@ class JitterImageView(context: Context, attr: AttributeSet) : ImageFilterView(co
     fun end() {
         jitterObject.end()
     }
+
+    fun enableJitter(isEnable: Boolean) {
+        if (isEnable) start() else end()
+    }
 }

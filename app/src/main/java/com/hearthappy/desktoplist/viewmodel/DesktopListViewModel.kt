@@ -10,7 +10,5 @@ import com.hearthappy.desktoplist.interfaces.IBindDataModel
  * ClassDescription:
  */
 class DesktopListViewModel(app:Application):AndroidViewModel(app) {
-    //用户的数据源
-    private lateinit var userListData: MutableList<MutableList<IBindDataModel>>
-    private var desktopListData: MutableList<MutableList<IBindDataModel>> = mutableListOf()
+
 }

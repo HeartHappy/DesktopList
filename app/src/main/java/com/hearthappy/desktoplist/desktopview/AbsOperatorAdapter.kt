@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import androidx.recyclerview.widget.RecyclerView
-import com.hearthappy.desktoplist.appstyle.AppStyle
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
 import java.util.*
 
@@ -21,7 +20,6 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
     private var implicitPosition = -1 //隐式插入下标，会发生改变
     private var implicitPositionFirstInset = -1 //首次插入隐式位置，不会发生改变
     var fromPosition: Int = -1
-    lateinit var appStyle: AppStyle
     private var isJitterAnimator = false
     private val jitterCache = mutableMapOf<Int, ObjectAnimator>()
 
@@ -33,7 +31,7 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
         if (!(hideImplicitPosition(position, holder) || hideFromPosition(position, holder))) {
             showItemView(holder)
         }
-        onBindMyViewHolder(holder, position, appStyle)
+        onBindMyViewHolder(holder, position)
     }
 
 
@@ -210,7 +208,7 @@ abstract class AbsOperatorAdapter<VH : RecyclerView.ViewHolder, in DB : IBindDat
     abstract fun createMyViewHolder(parent: ViewGroup, viewType: Int): VH
 
 
-    abstract fun onBindMyViewHolder(holder: VH, position: Int, appStyle: AppStyle)
+    abstract fun onBindMyViewHolder(holder: VH, position: Int)
 
 
     /**

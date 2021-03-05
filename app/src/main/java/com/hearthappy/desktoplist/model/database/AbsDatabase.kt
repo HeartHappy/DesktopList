@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
  * @author ChenRui
  * ClassDescription:数据库
  */
-@Database(entities = [DesktopDataTable::class], version = 1, exportSchema = false)
+@Database(entities = [DesktopDataTable::class], version = 2, exportSchema = false)
 abstract class AbsDatabase : RoomDatabase() {
     abstract fun desktopDataDao(): DesktopDataDao
 

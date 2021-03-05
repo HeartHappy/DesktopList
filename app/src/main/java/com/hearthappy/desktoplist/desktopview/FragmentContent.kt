@@ -60,9 +60,7 @@ class FragmentContent : Fragment() {
         rvDesktopList.layoutManager = GridLayoutManager(context, spanCount)
 
         desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
-            appStyle = this@FragmentContent.appStyle
             this.fromPosition = this@FragmentContent.destroyPageAdapterSelPosition
-            //                Log.d(TAG, "getValue: 初始化：$position,$destroyPageAdapterSelPosition")
         }
 
         //涉及数据绑定View的交给用户自定义

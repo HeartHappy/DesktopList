@@ -1,13 +1,11 @@
 package com.hearthappy.desktoplist.desktopview
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
 import android.widget.TextView
-import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hearthappy.desktoplist.R
@@ -29,15 +27,8 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
     }
 
 
-    override fun onBindMyViewHolder(holder: ViewHolder, position: Int, appStyle: AppStyle) {
-        //切换样式
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            holder.appIcon.round = when (appStyle) {
-                is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() } ?: let { 0f }
-                is AppStyle.Rounded -> appStyle.radius.toFloat()
-                is AppStyle.NotStyle -> 0f
-            }
-        }
+    override fun onBindMyViewHolder(holder: ViewHolder, position: Int) {
+
         //加载数据
         holder.appText.text = list[position].getAppName()
         context?.let {
@@ -47,15 +38,16 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
             iItemViewInteractive.onClick(position, list)
         }
         if (parent is DesktopListView) {
-            if (parent.isExistFloatView()) {
-                holder.appIcon.start()
-//                setJitterAnimator(holder.appIcon,position, true)
-                Log.d(TAG, "onBindMyViewHolder: 开始抖动:$position")
-            } else {
-                holder.appIcon.end()
-//                setJitterAnimator(holder.appIcon, position, false)
-                Log.d(TAG, "onBindMyViewHolder: 禁止抖动:$position")
+            //切换样式
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                val appStyle = parent.getAppStyle()
+                holder.appIcon.round = when (appStyle) {
+                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() } ?: let { 0f }
+                    is AppStyle.Rounded -> appStyle.radius.toFloat()
+                    is AppStyle.NotStyle -> 0f
+                }
             }
+            holder.appIcon.enableJitter(parent.isExistFloatView())
         }
     }
 
