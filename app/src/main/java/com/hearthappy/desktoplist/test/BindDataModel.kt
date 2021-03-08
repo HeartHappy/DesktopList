@@ -9,13 +9,13 @@ import kotlinx.android.parcel.Parcelize
  * ClassDescription:
  */
 @Parcelize
-class BindDataModel(private var url: String?, private var title: String?) : IBindDataModel {
+class BindDataModel(private var url: String, private var title: String) : IBindDataModel {
 
     override fun getAppUrl(): String {
-        return url.toString()
+        return url
     }
 
     override fun getAppName(): String {
-        return title.toString()
+        return title
     }
 }
