@@ -2,6 +2,7 @@ package com.hearthappy.desktoplist.desktopview
 
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -58,7 +59,7 @@ class FragmentContent : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         rvDesktopList.layoutManager = GridLayoutManager(context, spanCount)
-
+        Log.d(TAG, "onViewCreated: ${listData.size}")
         desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
             this.fromPosition = this@FragmentContent.destroyPageAdapterSelPosition
         }

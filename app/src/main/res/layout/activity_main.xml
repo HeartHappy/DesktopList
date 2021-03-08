@@ -24,6 +24,7 @@
             android:id="@+id/btnSwitchTransformPage"
             style="@style/style_navigation"
             android:text="切换侧滑动画" />
+
         <Button
             android:id="@+id/btnRefresh"
             style="@style/style_navigation"
@@ -33,7 +34,6 @@
     <com.hearthappy.desktoplist.desktopview.DesktopListView
         android:id="@+id/dlv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorViolet" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>

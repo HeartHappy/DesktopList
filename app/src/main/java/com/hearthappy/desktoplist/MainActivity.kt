@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.hearthappy.desktoplist.appstyle.AppStyle
-import com.hearthappy.desktoplist.desktopview.DesktopListView
 import com.hearthappy.desktoplist.interfaces.IBindDataModel
 import com.hearthappy.desktoplist.interfaces.ItemViewListener
 import com.hearthappy.desktoplist.test.DesktopDataModel
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合
          */
-        dlv.init(iDesktopList = DesktopDataModel(), DesktopListView.Orientation.PORTRAIT, 3)
+        dlv.init(iDesktopList = DesktopDataModel(), 4)
         dlv.setDesktopAdapterListener(object : ItemViewListener {
             override fun onClick(position: Int, list: List<IBindDataModel>) {
                 Toast.makeText(this@MainActivity, "position:$position,name:${list[position].getAppName()}", Toast.LENGTH_SHORT).show()
@@ -56,14 +55,20 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+
+    /**
+     * 支持横竖屏方向下，显示不同列数
+     * 注意：需要在清单文件中。在当前Activity中增加 android:configChanges="orientation|keyboardHidden|screenSize"
+     * @param newConfig Configuration
+     */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Log.d(TAG, "onConfigurationChanged: 竖屏")
-            dlv.init(iDesktopList = DesktopDataModel(), DesktopListView.Orientation.PORTRAIT, 3)
+            dlv.init(iDesktopList = DesktopDataModel(), 4)
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.d(TAG, "onConfigurationChanged: 横屏")
-            dlv.init(iDesktopList = DesktopDataModel(), DesktopListView.Orientation.LANDSCAPE, 6)
+            dlv.init(iDesktopList = DesktopDataModel(), 6)
         }
     }
 
