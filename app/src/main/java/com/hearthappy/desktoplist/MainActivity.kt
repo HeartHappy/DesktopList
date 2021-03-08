@@ -5,11 +5,10 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.hearthappy.desktoplist.appstyle.AppStyle
-import com.hearthappy.desktoplist.interfaces.IBindDataModel
-import com.hearthappy.desktoplist.interfaces.ItemViewListener
-import com.hearthappy.desktoplist.test.DesktopDataModel
-import com.hearthappy.desktoplist.transformpage.PagerTransformer
+import com.hearthappy.appstyle.AppStyle
+import com.hearthappy.interfaces.IBindDataModel
+import com.hearthappy.interfaces.ItemViewListener
+import com.hearthappy.transformpage.PagerTransformer
 import kotlinx.android.synthetic.main.activity_main.*
 
 

@@ -1,2 +1,3 @@
+include ':desktoplist'
 include ':app'
 rootProject.name = "DesktopList"

@@ -31,7 +31,7 @@
             android:text="刷新" />
     </androidx.appcompat.widget.Toolbar>
 
-    <com.hearthappy.desktoplist.desktopview.DesktopListView
+    <com.hearthappy.desktoplist.DesktopListView
         android:id="@+id/dlv"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

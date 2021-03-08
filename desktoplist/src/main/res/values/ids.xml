@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--用来创建临时View的id-->
+    <item name="floatView" type="id" />
+</resources>
