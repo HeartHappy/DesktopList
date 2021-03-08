@@ -1,4 +1,4 @@
-##### 一、创建数据结构BindDataModel类 ，继承IBindDataModel接口，实现URL与应用名称的绑定
+##### 一、后台返回的数据结构BindDataModel类 ，继承IBindDataModel接口，实现URL与应用名称的绑定
 ###### 例：
  ```
 @Parcelize class BindDataModel(private var url: String?, private var title: String?) : IBindDataModel {
@@ -33,59 +33,25 @@ class DesktopDataModel: IDesktopDataModel<BindDataModel> {
 }
 
 ```
-##### 三、创建自己的适配器，继承自IDesktopListAdapter接口，实现数据在视图中的显示
-###### 例：
-```
-@Parcelize class DesktopListAdapterImpl : IDesktopListAdapter {
 
-    /**
-     * 适配器的布局
-     * @return Int
-     */
-    override fun onAdapterResId(): Int {
-        return R.layout.item_app_list
-    }
 
-    override fun onBindMyViewHolder(
-        context: Context?,
-        holder: DesktopListAdapter.ViewHolder,
-        position: Int,
-        list: List<IBindDataModel>,
-        appStyle: AppStyle
-    ) {
-        holder.tvText.text = list[position].getAppName()
-        Glide.with(it).load(list[position].getAppUrl()).into(holder.ivAppIcon)
-    }
+##### 三、DesktopListView的使用
 
-    /**
-     * 注意：该返回值同你的布局高度填写，用于计算每个页面最多显示数量时使用
-     * @return Int  R.dimen.dp_~
-     */
-    override fun onItemViewHeight(): Int {
-        return R.dimen.dp_110
-    }
-}
-```
-
-##### 四、DesktopListView的使用
-
-###### 4.1、布局中的使用
+###### 3.1、布局中的使用
 ```
 <com.hearthappy.desktoplist.desktopview.DesktopListView
         android:id="@+id/dlv"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_weight="1" />
+        android:layout_height="match_parent" />
 ```
-###### 4.2、Activity中实现DesktopListView的初始化，
-参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合  3、实现IDesktopListAdapter接口的适配器
+###### 3.2、Activity中实现DesktopListView的初始化，
+参数分别是：  1、实现IDesktopDataModel接口的数据集合 2、每行显示列数
 ```
- dlv.init(3, DesktopDataModel(), DesktopListAdapterImpl())
+ dlv.init(DesktopDataModel(),3)
 ```
 
 
-##### 五、接口方法简介
+#####  四、接口方法简介
 ```
 interface IBindDataModel : Parcelable {
 
@@ -110,47 +76,14 @@ interface IDesktopDataModel<out DB : IBindDataModel> {
      */
     fun dataSources(): List<DB>
 
-    /**
-     * @return Int 返回数据集合的数量
-     */
-    fun dataSize(): Int
-
 }
 ```
 
-```
-interface IDesktopListAdapter : Parcelable {
-
-    /**
-     *
-     * @return Int 返回ItemView布局id
-     */
-    fun onAdapterResId(): Int
-
-    /**
-     * 绑定ViewHolder的回调
-     * @param context Context?
-     * @param holder ViewHolder
-     * @param position Int 下标
-     * @param list List<IBindDataModel> 数据集合
-     * @param appStyle AppStyle 图标显示的样式
-     */
-    fun onBindMyViewHolder(
-        context: Context?,
-        holder: DesktopListAdapter.ViewHolder,
-        position: Int,
-        list: List<IBindDataModel>,
-        appStyle: AppStyle
-    )
-
-    /**
-     *
-     * @return Int 返回布局的高度
-     */
-    fun onItemViewHeight(): Int
-}
-
-```
 
 
-##### 六、注意事项（第一、三步需要实现Parcelable接口，kotlin可在类上方通过@Parcelize注解自实现）
+##### 五、注意事项（第一、三步需要实现Parcelable接口，kotlin可在类上方通过@Parcelize注解自实现）
+
+
+##### 六、QA
+Q、是否支持横竖屏
+A、支持。需要在清单文件中。在当前Activity中增加 android:configChanges="orientation|keyboardHidden|screenSize"，然后在Activity中监听onConfigurationChanged回调，设置不同屏幕方向状态下的初始化
