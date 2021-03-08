@@ -1,16 +1,17 @@
 ##### 一、后台返回的数据结构BindDataModel类 ，继承IBindDataModel接口，实现URL与应用名称的绑定
 ###### 例：
  ```
-@Parcelize class BindDataModel(private var url: String?, private var title: String?) : IBindDataModel {
+@Parcelize
+class BindDataModel(private var url: String, private var title: String) : IBindDataModel {
 
     override fun getAppUrl(): String {
-        return url.toString()
+        return url
     }
 
     override fun getAppName(): String {
-        return title.toString()
+        return title
     }
-}  
+}
  ```
 ##### 二、创建BindDataModel的集合，继承自IDesktopDataModel<BindDataModel>并指定泛型，实现数据源与桌面控件的绑定
 ###### 例：
@@ -25,10 +26,6 @@ class DesktopDataModel: IDesktopDataModel<BindDataModel> {
 
     override fun dataSources(): List<BindDataModel> {
         return initDataSources()
-    }
-
-    override fun dataSize(): Int {
-       return mutableListOf.size
     }
 }
 
@@ -85,5 +82,5 @@ interface IDesktopDataModel<out DB : IBindDataModel> {
 
 
 ##### 六、QA
-Q、是否支持横竖屏
-A、支持。需要在清单文件中。在当前Activity中增加 android:configChanges="orientation|keyboardHidden|screenSize"，然后在Activity中监听onConfigurationChanged回调，设置不同屏幕方向状态下的初始化
+###### Q、是否支持横竖屏
+###### A、支持。需要在清单文件中。在当前Activity中增加 android:configChanges="orientation|keyboardHidden|screenSize"，然后在Activity中监听onConfigurationChanged回调，设置不同屏幕方向状态下的初始化
