@@ -70,6 +70,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     //以下三个属性主要解决dispatchTouchEvent事件分发的X、Y与选中View存在偏移问题
     private var isFirstDispatch = false  //是否位按下时的第一次分发
+
+    //onSize方法控件宽高是否初始化
+    private var initOnSize = false
     private var offsetX = 0f   //第一次分发时记录偏移量X
     private var offsetY = 0f
     private var touchX = 0f
@@ -175,6 +178,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             block(desktopDataDao)
             if (updatePageAdapter) {
                 Log.d(TAG, "execute: 初始化适配器")
+                Log.d(TAG, "execute: ---------------------------------------------------->")
                 requestUpdaterViewPagerAdapter()
             }
         }
@@ -219,17 +223,16 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * 2、初始化总页数：根据数据的总数量和每页显示数量（默认每页显示15个）
      */
     fun init(@NotNull iDesktopList: IDesktopDataModel<IBindDataModel>, orientation: Orientation = Orientation.PORTRAIT, @IntRange(from = 3, to = 8) spanCount: Int = 4) {
-        if (height <= 0 || !checkScreenChange()) {
+        if (!initOnSize) {
             postDelayed({ init(iDesktopList, orientation, spanCount) }, 200)
             return
         }
-
+        checkTheScreenOrientationChange()
         initializePageProperty(spanCount, iDesktopList)
         if (!checkSpanCountChangeByOrientation(orientation, spanCount)) {
             initPageData()
         }
     }
-
 
     /**
      * 初始化页面属性
@@ -237,6 +240,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @param iDesktopList IDesktopDataModel<IBindDataModel>
      */
     private fun initializePageProperty(spanCount: Int, iDesktopList: IDesktopDataModel<IBindDataModel>) {
+        initOnSize = false
         this.spanCount = spanCount
         this.iDesktopDataModel = iDesktopList
         //        this.iDesktopListAdapter = iDesktopListAdapter
@@ -253,7 +257,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         val remoteDataSources = iDesktopDataModel.dataSources()
         execute(true) { dao ->
             val localDataSource = dao.queryByOrientation(orientation.value())
-            Log.d(TAG, "initPageData  localDataSource count: ${localDataSource.size},remoteDataSources count:${remoteDataSources.size}")
+            //            Log.d(TAG, "initPageData  localDataSource count: ${localDataSource.size},remoteDataSources count:${remoteDataSources.size}")
             if (localDataSource.isEmpty()) {
                 Log.d(TAG, "initPageData:使用网络数据： 本地数据为空，并初次保存至本地")
                 conversionRemoteData(remoteDataSources)
@@ -304,27 +308,37 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     // TODO: 2021/3/5 首次进入后初始化了，通过关闭程序后，在此进入会存在死循环，一直未改变 。
     //  复现：竖屏显示后，退出程序，在竖屏进入死循环
     /**
-     * 检查屏幕用户设置是否发生变化
-     * @return Boolean true:代表宽高都已经改变了  false：还未执行onSize,代表还未改变宽高
+     * 检查屏幕方向是否发生改变.
+     * @return Boolean true:改变了  false：未改变
      */
-    private fun checkScreenChange(): Boolean {
+    private fun checkTheScreenOrientationChange(): Boolean {
         context.getSharedPreferences(SP_FILENAME) { sp ->
 
-            val currentScreenOrientation = sp toInt KEY_CURRENT_SCREEN_ORIENTATION
+            val oldScreenWidth = sp toInt KEY_SCREEN_WIDTH
+            val oldScreenHeight = sp toInt KEY_SCREEN_HEIGHT
+            val widthPixels = resources.displayMetrics.widthPixels
+            val heightPixels = resources.displayMetrics.heightPixels
+
             //首次进入已经改变
-            if (currentScreenOrientation == 0) {
-                sp.editApplySaveByName { it.putInt(KEY_CURRENT_SCREEN_ORIENTATION, width * height) }
+            if (oldScreenWidth == 0 && oldScreenHeight == 0) {
+                sp.editApplySaveByName {
+                    it.putInt(KEY_SCREEN_WIDTH, widthPixels)
+                    it.putInt(KEY_SCREEN_HEIGHT, heightPixels)
+                }
                 Log.d(TAG, "checkScreenChange: 初始化屏幕宽高")
-                return true
+                return false
             }
-            //
             //如果存储的宽*高/除以现阶段的宽不等于高，说明已经改变
-            if (currentScreenOrientation / width != height) {
-                sp.editApplySaveByName { it.putInt(KEY_CURRENT_SCREEN_ORIENTATION, width * height) }
-                Log.d(TAG, "checkScreenChange: 屏幕宽高已改变")
+            if (oldScreenWidth != widthPixels && oldScreenHeight != heightPixels) {
+                sp.editApplySaveByName {
+                    it.putInt(KEY_SCREEN_WIDTH, widthPixels)
+                    it.putInt(KEY_SCREEN_HEIGHT, heightPixels)
+                }
+                Log.d(TAG, "checkScreenChange: 屏幕宽高已改变,横竖屏切换了")
+                desktopListData.clear()
                 return true
             }
-            Log.d(TAG, "checkScreenChange: 屏幕宽高还未改变")
+            Log.d(TAG, "checkScreenChange: 屏幕宽高没有发生改变：w:$widthPixels,h:$heightPixels")
             return false
         }
         return false
@@ -413,13 +427,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         val block = dataSources.chunked(singlePageShowCount) { chunk -> desktopListData.add(chunk.toMutableList()) }
         //计算总页数
         totalPage = block.size
-        Log.d(TAG, "dataConversion: 网络数据转换成每页数据，并初次写入本地,页数：$totalPage,每页显示个数:$singlePageShowCount")
-        desktopListData.forEachIndexed { index, mutableList ->
-            Log.d(TAG, "conversionRemoteData: 当前页数:$index,每页显示数量：${mutableList.size}")
-            mutableList.forEachIndexed { i, iBindDataModel ->
-                Log.d(TAG, "conversionRemoteData: $i,${iBindDataModel.getAppName()}")
-            }
-        }
+        //        Log.d(TAG, "dataConversion: 网络数据转换成每页数据，并初次写入本地,页数：$totalPage,每页显示个数:$singlePageShowCount")
+        //        desktopListData.forEachIndexed { index, mutableList ->
+        ////            Log.d(TAG, "conversionRemoteData: 当前页数:$index,每页显示数量：${mutableList.size}")
+        //            mutableList.forEachIndexed { i, iBindDataModel ->Log.d(TAG, "conversionRemoteData: $i,${iBindDataModel.getAppName()}")
+        //            }
+        //        }
     }
 
 
@@ -434,8 +447,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             //得到划分的页面数据
             val dividePageData = group.value.sortedBy { it.pageAdapterPosition }
             desktopListData.add(dividePageData.toMutableList())
-            Log.d(TAG, "conversionLocalData:当前页数: ${group.key}")
-            dividePageData.forEach { Log.d(TAG, "groupBySort conversionLocalData: ${it.title},page:${it.pageNumber},position:${it.pageAdapterPosition},or:${it.orientation}") }
+            Log.d(TAG, "conversionLocalData:当前页数: ${group.key},每页数量：${dividePageData.size}")
+            //            dividePageData.forEach { Log.d(TAG, "groupBySort conversionLocalData: ${it.title},page:${it.pageNumber},position:${it.pageAdapterPosition},or:${it.orientation}") }
         }
     }
 
@@ -653,6 +666,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        initOnSize = true
         Log.d(TAG, "onSizeChanged: w:$w,h:$h,oldW:$oldw,oldH:$oldh")
     }
 

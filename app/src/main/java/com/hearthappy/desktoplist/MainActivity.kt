@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Log.d(TAG, "onCreate: ")
+
         btnSwitchAppStyle.setOnClickListener {
             when (++styleIndex % 3) {
                 1 -> dlv.setAppStyle(AppStyle.Rounded(24)).notifyChangeStyle()
@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity() {
          * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合
          */
         dlv.init(iDesktopList = DesktopDataModel(), DesktopListView.Orientation.PORTRAIT, 3)
-        Log.d(TAG, "onCreate: 初始化完毕，$requestedOrientation")
         dlv.setDesktopAdapterListener(object : ItemViewListener {
             override fun onClick(position: Int, list: List<IBindDataModel>) {
                 Toast.makeText(this@MainActivity, "position:$position,name:${list[position].getAppName()}", Toast.LENGTH_SHORT).show()
