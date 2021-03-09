@@ -18,7 +18,6 @@ class DesktopApp:Application() {
     var database: AbsDatabase by Delegates.notNull()
     override fun onCreate() {
         super.onCreate()
-        CrashReport.initCrashReport(applicationContext, "2be16d4c17", false)
         database= AbsDatabase.getDatabase(this,applicationScope)
     }
 }
