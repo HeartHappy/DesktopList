@@ -11,7 +11,7 @@ import kotlin.properties.Delegates
  * @author ChenRui
  * ClassDescription:
  */
-class DesktopApp:Application() {
+open class DesktopApp:Application() {
 
     private val applicationScope = CoroutineScope(SupervisorJob())
     var database: AbsDatabase by Delegates.notNull()
