@@ -166,9 +166,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         block: (RecyclerView) -> Unit
     ) {
         fragmentContent?.let { fc ->
-            fc.getRecyclerView()?.let {
-                block(it)
-            }
+            block(fc.getRecyclerView())
         }
     }
 
@@ -991,8 +989,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             "checkNeedMoveByDesktopPage--> destroyPageAdapterSelPosition:$fromPosition,fromAdapterPosition:${fromAdapterPosition},targetPosition:$targetIndex"
         )
         if (targetIndex == -1) return
-        val targetViewHolderRect =
-            fc.getRecyclerView()?.findViewHolderForAdapterPosition(targetIndex)
+        val targetViewHolderRect = fc.getRecyclerView().findViewHolderForAdapterPosition(targetIndex)
         targetViewHolderRect?.itemView?.let {
             if (ViewOperateUtils.findViewLocation(mfv)
                     .intersect(ViewOperateUtils.findViewLocation(it.findViewById(R.id.appIcon)))
@@ -1012,8 +1009,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         targetIndex: Int
     ) {
         if (getImplicitPosition() == -1) return
-        val implicitViewHolder = targetFragment.getRecyclerView()
-            ?.findViewHolderForAdapterPosition(getImplicitPosition())
+        val implicitViewHolder = targetFragment.getRecyclerView().findViewHolderForAdapterPosition(getImplicitPosition())
         implicitViewHolder?.itemView?.let { iv ->
             val implicitImageViewRect =
                 ViewOperateUtils.findViewLocation(iv.findViewById(R.id.appIcon))

@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.appstyle.AppStyle
 import com.hearthappy.desktoplist.databinding.FragmentContentBinding
 import com.hearthappy.interfaces.IBindDataModel
-import com.hi.dhl.binding.viewbind
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -33,7 +32,8 @@ class FragmentContent : Fragment() {
     private lateinit var iLifeCycle: ILifeCycle
     private var desktopListAdapter: DesktopListAdapter? = null
     private var listData: MutableList<IBindDataModel> by Delegates.notNull()
-    private val viewBinding: FragmentContentBinding by viewbind()
+    private var viewBinding: FragmentContentBinding? = null
+    private val binding get() = viewBinding!!
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val arguments = arguments
@@ -56,13 +56,13 @@ class FragmentContent : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         iLifeCycle.onCreateView(position)
-//        viewBinding = FragmentContentBinding.inflate(inflater, container, false)
-        return viewBinding.rvDesktopList
+        viewBinding = FragmentContentBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewBinding.apply {
+        binding.apply {
             rvDesktopList.layoutManager = GridLayoutManager(context, spanCount)
             Log.d(TAG, "onViewCreated: ${listData.size}")
             desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
@@ -95,6 +95,7 @@ class FragmentContent : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         iLifeCycle.onDestroyView(position)
+        viewBinding = null
     }
 
     override fun onDestroy() {
@@ -103,14 +104,14 @@ class FragmentContent : Fragment() {
     }
 
 
-    internal fun getAdapter(): DesktopListAdapter {
-        viewBinding.let {
+    internal fun getAdapter(): DesktopListAdapter? {
+        viewBinding?.let {
             return it.rvDesktopList.adapter as DesktopListAdapter
-        }
+        } ?: let { return null }
     }
 
     fun getRecyclerView(): RecyclerView {
-        return viewBinding.rvDesktopList
+        return binding.rvDesktopList
     }
 
 
@@ -126,7 +127,7 @@ class FragmentContent : Fragment() {
         if (::iLifeCycle.isInitialized) {
             if (!isVisibleToUser) {
                 //如果隐藏了检测是否存在隐式插入的ItemView
-                getAdapter().let {
+                getAdapter()?.let {
                     if (it.isImplicitInset()) {
                         it.implicitRemove()
                         //                    Log.d(TAG, "setUserVisibleHint: 不显示了，并且当前页面存在隐式View，执行删除")

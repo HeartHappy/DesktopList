@@ -9,21 +9,27 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hearthappy.appstyle.AppStyle
-import com.hearthappy.desktoplist.databinding.ItemAppListBinding
 import com.hearthappy.desktoplist.weiget.JitterImageView
 import com.hearthappy.interfaces.IBindDataModel
-import com.hi.dhl.binding.viewbind
+import kotlin.properties.Delegates
 
 /**
  * Created Date 2020/12/31.
  * @author ChenRui
  * ClassDescription:内部桌面适配器逻辑处理类，供用户实现
  */
-class DesktopListAdapter(private val context: Context?, private val list: List<IBindDataModel>, private val iItemViewInteractive: IItemViewInteractive, private val parent: ViewParent) : AbsOperatorAdapter<DesktopListAdapter.ViewHolder, IBindDataModel>(list) {
+class DesktopListAdapter(
+    private val context: Context?,
+    private val list: List<IBindDataModel>,
+    private val iItemViewInteractive: IItemViewInteractive,
+    private val parent: ViewParent
+) : AbsOperatorAdapter<DesktopListAdapter.ViewHolder, IBindDataModel>(list) {
 
 
     override fun createMyViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_app_list, parent, false))
+        return ViewHolder(
+            LayoutInflater.from(context).inflate(R.layout.item_app_list, parent, false)
+        )
     }
 
 
@@ -32,40 +38,49 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
         //加载数据
         holder.bindAppName(list[position].getAppName())
         holder.bindAppIcon(list[position].getAppUrl())
-        holder.itemView.setOnClickListener {iItemViewInteractive.onClick(position, list)}
+        holder.itemView.setOnClickListener { iItemViewInteractive.onClick(position, list) }
 
         //切换样式
         if (parent is DesktopListView) {
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                val appStyle = parent.getAppStyle()
-                holder.binding.appIcon.round = when (appStyle) {
-                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() } ?: let { 0f }
-                    is AppStyle.Rounded -> appStyle.radius.toFloat()
-                    is AppStyle.NotStyle -> 0f
-                }
-            }
+            holder.bindAppStyle(parent.getAppStyle())
             holder.enableJitter(parent.isExistFloatView())
         }
     }
 
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val binding: ItemAppListBinding by viewbind()
-        fun bindAppName(appName:String){
-            binding.appName.text=appName
+        private var appIcon: JitterImageView by Delegates.notNull()
+        private var appName: TextView by Delegates.notNull()
+
+        init {
+            appIcon = itemView.findViewById(R.id.appIcon)
+            appName = itemView.findViewById(R.id.appName)
         }
 
-        fun bindAppIcon(url:String){
-            context?.let { Glide.with(it).load(url).placeholder(R.mipmap.ic_launcher).error(android.R.drawable.ic_menu_report_image).into(binding.appIcon) }
+        fun bindAppName(appName: String) {
+            this.appName.text = appName
         }
 
-        fun enableJitter(isEnabled:Boolean){
-            binding.appIcon.enableJitter(isEnabled)
+        fun bindAppIcon(url: String) {
+            context?.let {
+                Glide.with(it).load(url).placeholder(R.mipmap.ic_launcher)
+                    .error(android.R.drawable.ic_menu_report_image).into(this.appIcon)
+            }
         }
-    }
 
-    companion object {
-        private const val TAG = "DesktopListAdapter"
+        fun bindAppStyle(appStyle: AppStyle) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                this.appIcon.round = when (appStyle) {
+                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() }
+                        ?: let { 0f }
+                    is AppStyle.Rounded -> appStyle.radius.toFloat()
+                    is AppStyle.NotStyle -> 0f
+                }
+            }
+        }
+
+        fun enableJitter(isEnabled: Boolean) {
+            this.appIcon.enableJitter(isEnabled)
+        }
     }
 }
