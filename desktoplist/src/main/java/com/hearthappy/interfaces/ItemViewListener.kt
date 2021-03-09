@@ -1,6 +1,6 @@
 package com.hearthappy.interfaces
 
-import com.hearthappy.interfaces.IBindDataModel
+import com.hearthappy.desktoplist.databinding.ItemAppListBinding
 
 /**
  * Created Date 2021/2/24.
@@ -8,5 +8,5 @@ import com.hearthappy.interfaces.IBindDataModel
  * ClassDescription:
  */
 interface ItemViewListener {
-    fun onClick(position: Int, list: List<IBindDataModel>)
+    fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
 }

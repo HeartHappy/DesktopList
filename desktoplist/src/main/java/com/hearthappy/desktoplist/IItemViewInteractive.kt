@@ -2,6 +2,7 @@ package com.hearthappy.desktoplist
 
 import android.os.Parcelable
 import android.view.View
+import com.hearthappy.desktoplist.databinding.ItemAppListBinding
 import com.hearthappy.interfaces.IBindDataModel
 
 /**
@@ -16,17 +17,23 @@ interface IItemViewInteractive : Parcelable {
      */
     fun selectViewRect(selectView: View?, adapterPosition: Int, fragmentContent: FragmentContent)
 
+
     /**
-     * itemView点击监听
+     * 长按
      * @param position Int
      * @param list List<IBindDataModel>
      */
-    fun onClick(position: Int, list: List<IBindDataModel>)
+    fun onLongClick(position: Int, list: List<IBindDataModel>)
+
 
     /**
-     * 选中View在当前界面移动
+     * 视图与数据的绑定
+     * @param position Int
+     * @param list List<IBindDataModel>
+     * @param viewBinding ItemAppListBinding
      */
-    fun onMove(fromPosition: Int, toPosition: Int)
+    fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
+
 
 
 }

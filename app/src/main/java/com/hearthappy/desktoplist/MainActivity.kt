@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.hearthappy.appstyle.AppStyle
 import com.hearthappy.desktoplist.databinding.ActivityMainBinding
+import com.hearthappy.desktoplist.databinding.ItemAppListBinding
 import com.hearthappy.interfaces.IBindDataModel
 import com.hearthappy.interfaces.ItemViewListener
 import com.hearthappy.transformpage.PagerTransformer
@@ -54,12 +56,25 @@ class MainActivity : AppCompatActivity() {
              */
             dlv.init(iDesktopList = DesktopDataModel(), 4)
             dlv.setDesktopAdapterListener(object : ItemViewListener {
-                override fun onClick(position: Int, list: List<IBindDataModel>) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "position:$position,name:${list[position].getAppName()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                override fun onBindView(
+                    position: Int,
+                    list: List<IBindDataModel>,
+                    viewBinding: ItemAppListBinding
+                ) {
+                    Glide.with(this@MainActivity).load(list[position].getAppUrl())
+                        .placeholder(R.mipmap.ic_launcher)
+                        .error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
+
+                    viewBinding.appName.text = list[position].getAppName()
+
+                    viewBinding.root.setOnClickListener {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "position:$position,name:${list[position].getAppName()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             })
         }
