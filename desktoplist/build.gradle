@@ -3,7 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'com.github.dcendents.android-maven'
     id 'kotlin-kapt'
-    id 'kotlin-android-extensions'
+    id 'kotlin-parcelize'
 }
 group = 'com.hearthappy.desktopView'
 def roomVersion = "2.2.5"
@@ -33,6 +33,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    buildFeatures{
+        viewBinding=true
     }
 }
 

@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.appstyle.AppStyle
+import com.hearthappy.desktoplist.databinding.FragmentContentBinding
 import com.hearthappy.interfaces.IBindDataModel
-import kotlinx.android.synthetic.main.fragment_tab_main.*
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -32,7 +32,8 @@ class FragmentContent : Fragment() {
     private lateinit var iLifeCycle: ILifeCycle
     private var desktopListAdapter: DesktopListAdapter? = null
     private var listData: MutableList<IBindDataModel> by Delegates.notNull()
-
+    private var viewBinding: FragmentContentBinding? = null
+    private val binding get() = viewBinding!!
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val arguments = arguments
@@ -49,40 +50,52 @@ class FragmentContent : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         iLifeCycle.onCreateView(position)
-        return inflater.inflate(R.layout.fragment_tab_main, container, false)
+        viewBinding = FragmentContentBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        rvDesktopList.layoutManager = GridLayoutManager(context, spanCount)
-        Log.d(TAG, "onViewCreated: ${listData.size}")
-        desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
-            this.fromPosition = this@FragmentContent.destroyPageAdapterSelPosition
-        }
-
-        //涉及数据绑定View的交给用户自定义
-        rvDesktopList.adapter = desktopListAdapter
-        rvDesktopList.itemAnimator?.changeDuration = 0
-        rvDesktopList.addItemDecoration(object : RecyclerView.ItemDecoration() {
-            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-                if (parent.getChildLayoutPosition(view) != 0) {
-                    outRect.top = verticalSpacing.toInt()
-                    outRect.bottom = verticalSpacing.toInt()
-                }
+        binding.apply {
+            rvDesktopList.layoutManager = GridLayoutManager(context, spanCount)
+            Log.d(TAG, "onViewCreated: ${listData.size}")
+            desktopListAdapter = DesktopListAdapter(context, listData, iItemViewInteractive, rvDesktopList.parent).apply {
+                this.fromPosition = this@FragmentContent.destroyPageAdapterSelPosition
             }
-        })
-        //绑定移动View
-        val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
-        itemTouchHelper.attachToRecyclerView(rvDesktopList)
-        iLifeCycle.onViewCreated(position)
+
+            //涉及数据绑定View的交给用户自定义
+            rvDesktopList.adapter = desktopListAdapter
+            rvDesktopList.itemAnimator?.changeDuration = 0
+            rvDesktopList.addItemDecoration(object : RecyclerView.ItemDecoration() {
+                override fun getItemOffsets(
+                    outRect: Rect,
+                    view: View,
+                    parent: RecyclerView,
+                    state: RecyclerView.State,
+                ) {
+                    if (parent.getChildLayoutPosition(view) != 0) {
+                        outRect.top = verticalSpacing.toInt()
+                        outRect.bottom = verticalSpacing.toInt()
+                    }
+                }
+            })
+            //绑定移动View
+            val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback())
+            itemTouchHelper.attachToRecyclerView(rvDesktopList)
+            iLifeCycle.onViewCreated(position)
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         iLifeCycle.onDestroyView(position)
+        viewBinding=null
     }
 
     override fun onDestroy() {
@@ -92,13 +105,13 @@ class FragmentContent : Fragment() {
 
 
     internal fun getAdapter(): DesktopListAdapter? {
-        rvDesktopList?.adapter?.let { return it as DesktopListAdapter } ?: let {
-            return null
-        }
+        viewBinding?.let {
+            return it.rvDesktopList.adapter as DesktopListAdapter
+        }?:let { return null }
     }
 
-    fun getRecyclerView(): RecyclerView? {
-        return rvDesktopList
+    fun getRecyclerView(): RecyclerView {
+        return binding.rvDesktopList
     }
 
 
@@ -128,7 +141,10 @@ class FragmentContent : Fragment() {
 
 
     private inner class ItemTouchHelperCallback : ItemTouchHelper.Callback() {
-        override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+        override fun getMovementFlags(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+        ): Int {
             return if (recyclerView.layoutManager is GridLayoutManager) {
                 val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
                 val swipeFlags = 0
@@ -140,7 +156,11 @@ class FragmentContent : Fragment() {
             }
         }
 
-        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder,
+        ): Boolean {
 
             /*//得到当拖拽的viewHolder的Position
             val fromPosition = viewHolder.adapterPosition
@@ -199,8 +219,16 @@ class FragmentContent : Fragment() {
 
 
     companion object {
-
-        fun newInstance(position: Int, destroyPageAdapterSelPosition: Int, mutableList: MutableList<IBindDataModel>, spanCount: Int, verticalSpacing: Float, appStyle: AppStyle, iItemViewInteractive: IItemViewInteractive, iLifeCycle: ILifeCycle): Fragment {
+        @JvmStatic fun newInstance(
+            position: Int,
+            destroyPageAdapterSelPosition: Int,
+            mutableList: MutableList<IBindDataModel>,
+            spanCount: Int,
+            verticalSpacing: Float,
+            appStyle: AppStyle,
+            iItemViewInteractive: IItemViewInteractive,
+            iLifeCycle: ILifeCycle,
+        ): Fragment {
             val fragmentContent = FragmentContent()
             val bundle = Bundle()
             bundle.putInt(POSITION, position)

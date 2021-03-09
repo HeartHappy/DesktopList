@@ -2,16 +2,15 @@ package com.hearthappy.desktoplist
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hearthappy.appstyle.AppStyle
+import com.hearthappy.desktoplist.databinding.ItemAppListBinding
 import com.hearthappy.desktoplist.weiget.JitterImageView
 import com.hearthappy.interfaces.IBindDataModel
-import kotlinx.android.synthetic.main.item_app_list.view.*
 
 /**
  * Created Date 2020/12/31.
@@ -19,10 +18,11 @@ import kotlinx.android.synthetic.main.item_app_list.view.*
  * ClassDescription:内部桌面适配器逻辑处理类，供用户实现
  */
 class DesktopListAdapter(private val context: Context?, private val list: List<IBindDataModel>, private val iItemViewInteractive: IItemViewInteractive, private val parent: ViewParent) : AbsOperatorAdapter<DesktopListAdapter.ViewHolder, IBindDataModel>(list) {
-
+    private lateinit var viewBinding:ItemAppListBinding
 
     override fun createMyViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_app_list, parent, false))
+        viewBinding= ItemAppListBinding.inflate(LayoutInflater.from(context),parent,false)
+        return ViewHolder(viewBinding)
     }
 
 
@@ -51,9 +51,9 @@ class DesktopListAdapter(private val context: Context?, private val list: List<I
     }
 
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val appText: TextView = itemView.appName
-        val appIcon: JitterImageView = itemView.appIcon
+    inner class ViewHolder(viewBinding: ItemAppListBinding) : RecyclerView.ViewHolder(viewBinding.root) {
+        val appText: TextView = viewBinding.appName
+        val appIcon: JitterImageView = viewBinding.appIcon
     }
 
     companion object {
