@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.RectF
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.os.Parcel
 import android.util.AttributeSet
 import android.util.Log
@@ -83,7 +84,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private var desktopListData: MutableList<MutableList<IBindDataModel>> = mutableListOf()
 
     private var isMessageSend = false //消息是否已发送,另代表是否在边界
-    private var myHandler: Handler = Handler {
+    private var myHandler: Handler = Handler(Looper.getMainLooper()) {
         when (it.what) {
             ACTION_PREV_PAGE -> {
                 setCurrentItem(currentItem - 1, true)
