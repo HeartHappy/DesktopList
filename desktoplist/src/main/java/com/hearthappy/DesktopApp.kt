@@ -2,7 +2,6 @@ package com.hearthappy
 
 import android.app.Application
 import com.hearthappy.model.database.AbsDatabase
-import com.tencent.bugly.crashreport.CrashReport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlin.properties.Delegates
