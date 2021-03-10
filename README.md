@@ -1,7 +1,7 @@
 ##### 一、后台返回的数据结构BindDataModel类 ，继承IBindDataModel接口，实现URL与应用名称的绑定
 ###### 例：
  ```
-@Parcelize
+@kotlinx.parcelize.Parcelize
 class BindDataModel(private var url: String, private var title: String) : IBindDataModel {
 
     override fun getAppUrl(): String {
