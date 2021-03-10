@@ -56,10 +56,11 @@ class MainActivity : AppCompatActivity() {
      */
     private fun ActivityMainBinding.updateData() {
         btnRefresh.setOnClickListener {
-            if (++strIndex < str.size) {
+            if (strIndex < str.size) {
                 val filter = desktopDataModel.dataSources().filter { it.getAppName().contains(str[strIndex]) }
                 filter.forEach { Log.d(TAG, "updateData: ${it.getAppName()}") }
                 dlv.notifyDesktopDataChange(filter)
+                strIndex++
             } else {
                 dlv.restoreDesktopData()
             }
