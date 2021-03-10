@@ -19,6 +19,8 @@ class MainActivity : AppCompatActivity() {
     private var styleIndex = 0
     private var transformPagerIndex = 0
     private lateinit var viewBinding: ActivityMainBinding
+    private val desktopDataModel = DesktopDataModel()
+    private var isFilter=false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_main)
@@ -31,13 +33,21 @@ class MainActivity : AppCompatActivity() {
             setDesktopTransform()
 
             btnRefresh.setOnClickListener {
-                dlv.notifyUpdateCurrentPage()
+                if(!isFilter){
+                    val filter = desktopDataModel.dataSources().filter { it.getAppName().contains("P") }
+                    dlv.notifyDesktopDataChange(filter)
+                }else{
+                    dlv.restoreDesktopData()
+                }
+
+                isFilter=!isFilter
+
             }
 
             /**
              * 参数分别是：1、实现IDesktopDataModel接口的数据集合  2、每行显示列数
              */
-            dlv.init(iDesktopList = DesktopDataModel(), 4)
+            dlv.init(desktopList = desktopDataModel.dataSources(), 4)
 
             setDesktopAdapterListener()
             sfl.setOnRefreshListener {
@@ -123,10 +133,10 @@ class MainActivity : AppCompatActivity() {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Log.d(TAG, "onConfigurationChanged: 竖屏")
-            viewBinding.dlv.init(iDesktopList = DesktopDataModel(), 4)
+            viewBinding.dlv.init(desktopList = desktopDataModel.dataSources(), 4)
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.d(TAG, "onConfigurationChanged: 横屏")
-            viewBinding.dlv.init(iDesktopList = DesktopDataModel(), 6)
+            viewBinding.dlv.init(desktopList = desktopDataModel.dataSources(), 6)
         }
     }
 
