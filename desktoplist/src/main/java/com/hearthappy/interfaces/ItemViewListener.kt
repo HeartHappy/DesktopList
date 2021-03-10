@@ -8,5 +8,12 @@ import com.hearthappy.desktoplist.databinding.ItemAppListBinding
  * ClassDescription:
  */
 interface ItemViewListener {
+
+//    fun onSelectedView()
+
+//    fun onSelectedMoveView()
+
+//    fun onReleaseView()
+
     fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
 }

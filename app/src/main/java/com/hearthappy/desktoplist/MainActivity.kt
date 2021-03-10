@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.hearthappy.appstyle.AppStyle
 import com.hearthappy.desktoplist.databinding.ActivityMainBinding
@@ -26,57 +27,91 @@ class MainActivity : AppCompatActivity() {
         setContentView(viewBinding.root)
 
         viewBinding.apply {
-            btnSwitchAppStyle.setOnClickListener {
-                when (++styleIndex % 3) {
-                    1 -> dlv.setAppStyle(AppStyle.Rounded(24)).notifyChangeStyle()
-                    2 -> dlv.setAppStyle(AppStyle.Circle).notifyChangeStyle()
-                    else -> dlv.setAppStyle(AppStyle.NotStyle).notifyChangeStyle()
-                }
-                Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
-            }
+            setAppStyle()
 
-            btnSwitchTransformPage.setOnClickListener {
-                when (++transformPagerIndex % 3) {
-                    1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill)
-                        .notifyChangeStyle()
-                    2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp)
-                        .notifyChangeStyle()
-                    else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate)
-                        .notifyChangeStyle()
-                }
-                Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
-            }
+            setDesktopTransform()
 
             btnRefresh.setOnClickListener {
                 dlv.notifyUpdateCurrentPage()
             }
 
             /**
-             * 参数分别是：1、每行显示列数  2、实现IDesktopDataModel接口的数据集合
+             * 参数分别是：1、实现IDesktopDataModel接口的数据集合  2、每行显示列数
              */
             dlv.init(iDesktopList = DesktopDataModel(), 4)
-            dlv.setDesktopAdapterListener(object : ItemViewListener {
 
-                override fun onBindView(
-                    position: Int,
-                    list: List<IBindDataModel>,
-                    viewBinding: ItemAppListBinding
-                ) {
-                    Glide.with(this@MainActivity).load(list[position].getAppUrl())
-                        .placeholder(R.mipmap.ic_launcher)
-                        .error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
+            setDesktopAdapterListener()
 
-                    viewBinding.appName.text = list[position].getAppName()
+            sfl.setOnRefreshListener {
+                sfl.isRefreshing = false
+                Toast.makeText(this@MainActivity, "触发刷新了", Toast.LENGTH_SHORT).show()
+            }
 
-                    viewBinding.root.setOnClickListener {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "position:$position,name:${list[position].getAppName()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+        }
+    }
+
+
+    /**
+     * 设置适配器视图与数据绑定监听。
+     * @receiver ActivityMainBinding
+     */
+    private fun ActivityMainBinding.setDesktopAdapterListener() {
+        dlv.setDesktopAdapterListener(object : ItemViewListener {
+
+            override fun onBindView(
+                position: Int,
+                list: List<IBindDataModel>,
+                viewBinding: ItemAppListBinding
+            ) {
+                Glide.with(this@MainActivity).load(list[position].getAppUrl())
+                    .placeholder(R.mipmap.ic_launcher)
+                    .error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
+
+                viewBinding.appName.text = list[position].getAppName()
+
+                viewBinding.root.setOnClickListener {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "position:$position,name:${list[position].getAppName()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            })
+            }
+        })
+    }
+
+
+    /**
+     * 设置滑动时的动画
+     * @receiver ActivityMainBinding
+     */
+    private fun ActivityMainBinding.setDesktopTransform() {
+        btnSwitchTransformPage.setOnClickListener {
+            when (++transformPagerIndex % 3) {
+                1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill)
+                    .notifyChangeStyle()
+                2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp)
+                    .notifyChangeStyle()
+                else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate)
+                    .notifyChangeStyle()
+            }
+            Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    /**
+     * 设置应用图标显示样式
+     * @receiver ActivityMainBinding
+     */
+    private fun ActivityMainBinding.setAppStyle() {
+        btnSwitchAppStyle.setOnClickListener {
+            when (++styleIndex % 3) {
+                1 -> dlv.setAppStyle(AppStyle.Rounded(24)).notifyChangeStyle()
+                2 -> dlv.setAppStyle(AppStyle.Circle).notifyChangeStyle()
+                else -> dlv.setAppStyle(AppStyle.NotStyle).notifyChangeStyle()
+            }
+            Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
         }
     }
 

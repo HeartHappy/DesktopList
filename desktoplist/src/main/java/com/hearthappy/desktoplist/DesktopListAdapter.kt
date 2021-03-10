@@ -37,7 +37,7 @@ class DesktopListAdapter(
         //切换样式
         if (parent is DesktopListView) {
             holder.bindAppStyle(parent.getAppStyle())
-            holder.enableJitter(parent.isExistFloatView())
+            holder.enableJitter(parent.isDragItemView())
         }
     }
 
