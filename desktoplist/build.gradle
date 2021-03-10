@@ -58,6 +58,8 @@ dependencies {
 
 //    implementation "com.facebook.stetho:stetho:1.4.2"
     implementation 'com.hi-dhl:binding:1.0.7'
+
+
 }
 
 task sourcesJar(type: Jar) {

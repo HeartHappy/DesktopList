@@ -24,6 +24,11 @@ class DesktopRefreshLayout(context: Context, attrs: AttributeSet?) :
         mTouchSlop = ViewConfiguration.get(context).scaledTouchSlop
     }
 
+    /**
+     * 解决左右滑动时与下拉刷新控件的事件冲突
+     * @param ev MotionEvent
+     * @return Boolean
+     */
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -63,7 +68,7 @@ class DesktopRefreshLayout(context: Context, attrs: AttributeSet?) :
 
 
     /**
-     * 解决ItemView与下拉刷新控件的事件冲突
+     * 解决ItemView拖拽过程中与下拉刷新控件的事件冲突
      * @return Boolean 父布局的子视图是否可以向上滑动  true:子视图可以向上滑动，则优先使用子视图的事件处理  false：不支持，使用下拉刷新的事件处理
      */
     override fun canChildScrollUp(): Boolean {

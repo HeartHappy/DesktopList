@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.hearthappy.appstyle.AppStyle
 import com.hearthappy.desktoplist.databinding.ActivityMainBinding
@@ -41,7 +40,6 @@ class MainActivity : AppCompatActivity() {
             dlv.init(iDesktopList = DesktopDataModel(), 4)
 
             setDesktopAdapterListener()
-
             sfl.setOnRefreshListener {
                 sfl.isRefreshing = false
                 Toast.makeText(this@MainActivity, "触发刷新了", Toast.LENGTH_SHORT).show()

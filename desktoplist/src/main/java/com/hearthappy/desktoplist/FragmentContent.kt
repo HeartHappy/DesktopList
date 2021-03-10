@@ -218,7 +218,7 @@ class FragmentContent : Fragment() {
 
 
     companion object {
-        @JvmStatic fun newInstance(
+        fun newInstance(
             position: Int,
             destroyPageAdapterSelPosition: Int,
             mutableList: MutableList<IBindDataModel>,

@@ -10,7 +10,7 @@ import kotlinx.android.parcel.Parcelize
  * @author ChenRui
  * ClassDescription:pageNumber存储的是页面的索引（0~3页，说明有4页）
  */
-@Entity(tableName = "DesktopDataTable") @Parcelize
+@Entity(tableName = "DesktopDataTable") @kotlinx.parcelize.Parcelize
 class DesktopDataTable(@PrimaryKey(autoGenerate = true) val id: Long = 0, val title: String, val url: String, val pageNumber: Int, val pageAdapterPosition: Int, val orientation: Int) :
     IBindDataModel {
     override fun getAppUrl(): String {
