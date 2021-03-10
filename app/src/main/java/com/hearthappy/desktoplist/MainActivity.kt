@@ -20,10 +20,11 @@ class MainActivity : AppCompatActivity() {
     private var transformPagerIndex = 0
     private lateinit var viewBinding: ActivityMainBinding
     private val desktopDataModel = DesktopDataModel()
-    private var isFilter=false
+    private var str = arrayOf("A", "B", "C", "D", "P")
+    private var strIndex = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
+        //        setContentView(R.layout.activity_main)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
@@ -32,17 +33,7 @@ class MainActivity : AppCompatActivity() {
 
             setDesktopTransform()
 
-            btnRefresh.setOnClickListener {
-                if(!isFilter){
-                    val filter = desktopDataModel.dataSources().filter { it.getAppName().contains("P") }
-                    dlv.notifyDesktopDataChange(filter)
-                }else{
-                    dlv.restoreDesktopData()
-                }
-
-                isFilter=!isFilter
-
-            }
+            updateData()
 
             /**
              * 参数分别是：1、实现IDesktopDataModel接口的数据集合  2、每行显示列数
@@ -60,6 +51,23 @@ class MainActivity : AppCompatActivity() {
 
 
     /**
+     * 数据的更新和恢复    注意：数据的更新不会记录存储，只是临时的UI显示，适用于搜索后的数据更新
+     * @receiver ActivityMainBinding
+     */
+    private fun ActivityMainBinding.updateData() {
+        btnRefresh.setOnClickListener {
+            if (++strIndex < str.size) {
+                val filter = desktopDataModel.dataSources().filter { it.getAppName().contains(str[strIndex]) }
+                filter.forEach { Log.d(TAG, "updateData: ${it.getAppName()}") }
+                dlv.notifyDesktopDataChange(filter)
+            } else {
+                dlv.restoreDesktopData()
+            }
+        }
+    }
+
+
+    /**
      * 设置适配器视图与数据绑定监听。
      * @receiver ActivityMainBinding
      */
@@ -69,20 +77,14 @@ class MainActivity : AppCompatActivity() {
             override fun onBindView(
                 position: Int,
                 list: List<IBindDataModel>,
-                viewBinding: ItemAppListBinding
+                viewBinding: ItemAppListBinding,
             ) {
-                Glide.with(this@MainActivity).load(list[position].getAppUrl())
-                    .placeholder(R.mipmap.ic_launcher)
-                    .error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
+                Glide.with(this@MainActivity).load(list[position].getAppUrl()).placeholder(R.mipmap.ic_launcher).error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
 
                 viewBinding.appName.text = list[position].getAppName()
 
                 viewBinding.root.setOnClickListener {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "position:$position,name:${list[position].getAppName()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@MainActivity, "position:$position,name:${list[position].getAppName()}", Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -96,12 +98,9 @@ class MainActivity : AppCompatActivity() {
     private fun ActivityMainBinding.setDesktopTransform() {
         btnSwitchTransformPage.setOnClickListener {
             when (++transformPagerIndex % 3) {
-                1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill)
-                    .notifyChangeStyle()
-                2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp)
-                    .notifyChangeStyle()
-                else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate)
-                    .notifyChangeStyle()
+                1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill).notifyChangeStyle()
+                2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp).notifyChangeStyle()
+                else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate).notifyChangeStyle()
             }
             Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
         }

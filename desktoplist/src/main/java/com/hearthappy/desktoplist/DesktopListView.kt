@@ -261,7 +261,11 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     fun notifyDesktopDataChange(desktopList: List<IBindDataModel>) {
         computerPageProperty(spanCount)
-        if (!::filterDesktopList.isInitialized) filterDesktopList = mutableListOf()
+        if (!::filterDesktopList.isInitialized) {
+            filterDesktopList = mutableListOf()
+        }else{
+            filterDesktopList.clear()
+        }
         val block = desktopList.chunked(singlePageShowCount) { chunk -> filterDesktopList.add(chunk.toMutableList()) }
         //计算总页数
         totalPage = block.size
