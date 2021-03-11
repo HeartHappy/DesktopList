@@ -9,8 +9,8 @@ import com.hearthappy.interfaces.IDesktopDataModel
  */
 class DesktopDataModel : IDesktopDataModel<BindDataModel> {
     private val dataSources = ArrayList<BindDataModel>().apply {
-        add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg", "AAA","key1"))
-        add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg", "AAA","key2"))
+        add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg", "AAA", "key1"))
+        add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg", "AAA", "key2"))
         add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "BBB"))
         add(BindDataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "CCC"))
         add(BindDataModel("https://i.loli.net/2019/09/09/zqvDRAUk2jKhZfT.jpg", "DDD"))
@@ -30,7 +30,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "RRR"))
         add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "RRR1234564668"))
 
-        /*add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "SSS"))
+        add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "SSS"))
         add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "TTT"))
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "UUU"))
         add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/4e4a20a4462309f7e41f5cfe760e0cf3d6cad6ee.jpg", "VVV"))
@@ -69,7 +69,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "INS")) //初始化后新增的
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "DNS")) //初始化后新增的第2条
         add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "MAC"))
-        //
+
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "YDG")) //批量新增
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "YDJ"))
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "KPL"))
@@ -77,7 +77,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "PPT"))
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "UAM"))
         add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "NGD"))
-        add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "XIA"))*/
+        add(BindDataModel("http://g.hiphotos.baidu.com/image/pic/item/55e736d12f2eb938d5277fd5d0628535e5dd6f4a.jpg", "XIA"))
     }
 
 

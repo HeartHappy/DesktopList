@@ -28,7 +28,7 @@
         <Button
             android:id="@+id/btnRefresh"
             style="@style/style_navigation"
-            android:text="刷新" />
+            android:text="搜索" />
     </androidx.appcompat.widget.Toolbar>
 
     <com.hearthappy.desktoplist.DesktopRefreshLayout

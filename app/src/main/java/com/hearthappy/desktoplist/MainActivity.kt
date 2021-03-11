@@ -1,5 +1,6 @@
 package com.hearthappy.desktoplist
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -20,29 +21,34 @@ class MainActivity : AppCompatActivity() {
     private var transformPagerIndex = 0
     private lateinit var viewBinding: ActivityMainBinding
     private val desktopDataModel = DesktopDataModel()
-    private var str = arrayOf("A", "B", "C", "D", "P")
+    private var searchStr = arrayOf("A", "B", "C", "D", "P")
     private var strIndex = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //        setContentView(R.layout.activity_main)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
+
         viewBinding.apply {
+
+            updateBtnText()
+
             setAppStyle()
 
             setDesktopTransform()
 
-            updateData()
+            searchData()
 
             /**
-             * 参数分别是：1、实现IDesktopDataModel接口的数据集合  2、每行显示列数
+             * 参数分别是：1、绑定数据的集合  2、每行显示列数
              */
             dlv.init(desktopList = desktopDataModel.dataSources(), 4)
 
             setDesktopAdapterListener()
             sfl.setOnRefreshListener {
-                dlv.init(desktopList = desktopDataModel.dataSources(),4)
+                dlv.init(desktopList = desktopDataModel.dataSources(), 4)
                 sfl.isRefreshing = false
                 Toast.makeText(this@MainActivity, "触发刷新了", Toast.LENGTH_SHORT).show()
             }
@@ -50,18 +56,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n") private fun ActivityMainBinding.updateBtnText() {
+        btnRefresh.text = "搜索${searchStr[strIndex]}"
+    }
+
 
     /**
      * 数据的更新和恢复    注意：数据的更新不会记录存储，只是临时的UI显示，适用于搜索后的数据更新
      * @receiver ActivityMainBinding
      */
-    private fun ActivityMainBinding.updateData() {
+    private fun ActivityMainBinding.searchData() {
         btnRefresh.setOnClickListener {
-            if (strIndex < str.size) {
-                val filter = desktopDataModel.dataSources().filter { it.getAppName().contains(str[strIndex]) }
+            if (strIndex < searchStr.size) {
+                val filter = desktopDataModel.dataSources().filter { it.getAppName().contains(searchStr[strIndex]) }
                 filter.forEach { Log.d(TAG, "updateData: ${it.getAppName()}") }
                 dlv.notifyDesktopDataChange(filter)
                 strIndex++
+                updateBtnText()
             } else {
                 dlv.restoreDesktopData()
             }
@@ -88,6 +99,7 @@ class MainActivity : AppCompatActivity() {
                 Glide.with(this@MainActivity).load(list[position].getAppUrl()).placeholder(R.mipmap.ic_launcher).error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
 
                 viewBinding.appName.text = list[position].getAppName()
+                viewBinding.appName.setSubText("子文本:$position", delay = 5000)
 
             }
         })

@@ -20,7 +20,7 @@ class JitterImageView(context: Context, attr: AttributeSet) : ImageFilterView(co
      *
      * 开始抖动
      */
-    fun start() {
+    private fun start() {
         jitterObject.apply {
             interpolator = LinearInterpolator()
             duration = 700
@@ -33,7 +33,7 @@ class JitterImageView(context: Context, attr: AttributeSet) : ImageFilterView(co
     /**
      * 停止抖动
      */
-    fun end() {
+    private fun end() {
         jitterObject.end()
     }
 
