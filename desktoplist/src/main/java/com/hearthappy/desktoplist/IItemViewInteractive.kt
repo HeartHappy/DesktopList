@@ -19,6 +19,13 @@ interface IItemViewInteractive : Parcelable {
 
 
     /**
+     * 点击事件
+     * @param position Int
+     * @param list List<IBindDataModel>
+     */
+    fun onClick(position: Int, list: List<IBindDataModel>)
+
+    /**
      * 长按
      * @param position Int
      * @param list List<IBindDataModel>
@@ -33,7 +40,6 @@ interface IItemViewInteractive : Parcelable {
      * @param viewBinding ItemAppListBinding
      */
     fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
-
 
 
 }

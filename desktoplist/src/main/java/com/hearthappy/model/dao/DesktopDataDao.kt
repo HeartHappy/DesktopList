@@ -33,8 +33,8 @@ import com.hearthappy.model.table.DesktopDataTable
     //*****************************************************************
     //更新
     //*****************************************************************
-    @Query("UPDATE DesktopDataTable SET pageNumber=:pageNumber,pageAdapterPosition=:pageAdapterPosition WHERE title=:title AND url=:url AND orientation=:orientation")
-    fun update(title: String, url: String, pageNumber: Int, pageAdapterPosition: Int, orientation: Int): Int
+    @Query("UPDATE DesktopDataTable SET pageNumber=:pageNumber,pageAdapterPosition=:pageAdapterPosition WHERE title=:title AND url=:url AND orientation=:orientation AND appKey=:appKey")
+    fun update(title: String, url: String,appKey:String, pageNumber: Int, pageAdapterPosition: Int, orientation: Int): Int
 
 
     //*****************************************************************

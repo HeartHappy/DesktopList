@@ -1,7 +1,6 @@
 package com.hearthappy.desktoplist
 
 import com.hearthappy.interfaces.IBindDataModel
-import kotlinx.android.parcel.Parcelize
 
 /**
  * Created Date 2021/1/4.
@@ -9,7 +8,7 @@ import kotlinx.android.parcel.Parcelize
  * ClassDescription:
  */
 @kotlinx.parcelize.Parcelize
-class BindDataModel(private var url: String, private var title: String) : IBindDataModel {
+class BindDataModel(private var url: String, private var title: String, private var appId: String = "") : IBindDataModel {
 
     override fun getAppUrl(): String {
         return url
@@ -17,5 +16,9 @@ class BindDataModel(private var url: String, private var title: String) : IBindD
 
     override fun getAppName(): String {
         return title
+    }
+
+    override fun getAppId(): String {
+        return appId
     }
 }

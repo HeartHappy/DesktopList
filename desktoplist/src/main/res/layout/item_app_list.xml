@@ -21,7 +21,6 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:gravity="center"
-        android:maxLength="10"
         android:singleLine="true"
         android:textColor="#000"
         android:textSize="@dimen/sp_14" />

@@ -80,7 +80,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     private lateinit var orientation: Orientation
 
-    //用户的数据源
+    //用户数据源
+    private lateinit var desktopDataModel: List<IBindDataModel>
+
+    //用户拆分后的数据源
     private var desktopListData: MutableList<MutableList<IBindDataModel>> = mutableListOf()
 
     //用户条件搜索后的数据
@@ -100,8 +103,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
         false
     }
-
-    private lateinit var desktopDataModel: List<IBindDataModel>
 
 
     /**
@@ -263,7 +264,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         computerPageProperty(spanCount)
         if (!::filterDesktopList.isInitialized) {
             filterDesktopList = mutableListOf()
-        }else{
+        } else {
             filterDesktopList.clear()
         }
         val block = desktopList.chunked(singlePageShowCount) { chunk -> filterDesktopList.add(chunk.toMutableList()) }
@@ -284,7 +285,6 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private fun computerPageProperty(
         spanCount: Int,
     ) {
-        initOnSize = false
         val itemHeightSpan = resources.getDimensionPixelOffset(R.dimen.dp_105)
         val precisionRowsCount = ComputerUtils.getFloatLimit(height * 1f / itemHeightSpan).toFloat()
         val rowsCount = height / itemHeightSpan
@@ -491,7 +491,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             desktopListData.add(dividePageData.toMutableList())
             Log.d(TAG, "conversionLocalData:当前页数: ${group.key},每页显示数量：${dividePageData.size}")
             dividePageData.forEach {
-                Log.d(TAG, "groupBySort conversionLocalData: ${it.title},page:${it.pageNumber},position:${it.pageAdapterPosition},or:${it.orientation}")
+                Log.d(TAG, "groupBySort conversionLocalData: ${it.title},pagePosition:${it.pageNumber},adapterPosition:${it.pageAdapterPosition},orientation:${it.orientation}")
             }
         }
     }
@@ -572,7 +572,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         for (i in 0 until totalPage) {
             val numberPerPage = desktopListData[i].size
             for (j in 0 until numberPerPage) {
-                dao.insert(DesktopDataTable(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i, pageAdapterPosition = j, orientation = this.orientation.value()))
+                dao.insert(DesktopDataTable(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), appKey = desktopListData[i][j].getAppId(), pageNumber = i, pageAdapterPosition = j, orientation = this.orientation.value()))
             }
         }
     }
@@ -588,8 +588,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 val numberPerPage = desktopListData[i].size
                 //                Log.d(TAG, "executeSyncUpdate number per Page----->: $numberPerPage")
                 for (j in 0 until numberPerPage) {
-                    Log.d(TAG, "executeSyncUpdate: ${desktopListData[i][j].getAppName()},page:$i,position:$j")
-                    dao.update(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), pageNumber = i, pageAdapterPosition = j, orientation.value())
+                    val bindDataModel = desktopListData[i][j]
+                    Log.d(TAG, "executeSyncUpdate: ${bindDataModel.getAppName()},page:$i,position:$j,id:${bindDataModel.getAppId()}")
+                    dao.update(title = bindDataModel.getAppName(), url = bindDataModel.getAppUrl(), appKey = bindDataModel.getAppId(), pageNumber = i, pageAdapterPosition = j, orientation.value())
                 }
             }
         }
@@ -613,7 +614,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         var insetIndex = insetPageAdapterIndex
         insetDataList.forEachIndexed { _, insetData ->
             //            Log.d(TAG, "executeSyncInset: sync inset:${insetData.getAppName()}")
-            dao.insert(DesktopDataTable(title = insetData.getAppName(), url = insetData.getAppUrl(), pageNumber = insetPageIndex, pageAdapterPosition = insetIndex, orientation = orientation.value()))
+            dao.insert(DesktopDataTable(title = insetData.getAppName(), url = insetData.getAppUrl(), appKey = insetData.getAppId(), pageNumber = insetPageIndex, pageAdapterPosition = insetIndex, orientation = orientation.value()))
             ++insetIndex
         }
     }
@@ -763,6 +764,18 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         }
     }
 
+
+    /**
+     * 点击事件
+     * @param position Int
+     * @param list List<IBindDataModel>
+     */
+    private fun onClickItemView(position: Int, list: List<IBindDataModel>) {
+        val filter = desktopDataModel.filter { it.getAppName() == list[position].getAppName() && it.getAppId() == list[position].getAppId() }
+        if (filter.isNotEmpty()) {
+            itemViewListener?.onClickItemView(filter[0])
+        }
+    }
 
     /**
      * 适配器中ItemView的视图绑定
@@ -1237,6 +1250,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 ) {
                     onSelectItemView(selectView, adapterPosition, fragmentContent)
                     //                    Log.d(TAG, "selectItemView:current page:${currentItem},interface result： $selectView,select position:$adapterPosition")
+                }
+
+                override fun onClick(position: Int, list: List<IBindDataModel>) {
+                    onClickItemView(position, list)
                 }
 
 

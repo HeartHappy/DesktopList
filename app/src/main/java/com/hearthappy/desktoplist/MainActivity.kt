@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
             setDesktopAdapterListener()
             sfl.setOnRefreshListener {
+                dlv.init(desktopList = desktopDataModel.dataSources(),4)
                 sfl.isRefreshing = false
                 Toast.makeText(this@MainActivity, "触发刷新了", Toast.LENGTH_SHORT).show()
             }
@@ -74,6 +75,10 @@ class MainActivity : AppCompatActivity() {
      */
     private fun ActivityMainBinding.setDesktopAdapterListener() {
         dlv.setDesktopAdapterListener(object : ItemViewListener {
+            override fun onClickItemView(bindDataModel: IBindDataModel) {
+                val myBindDataModel = bindDataModel as BindDataModel
+                Toast.makeText(this@MainActivity, "name:${myBindDataModel.getAppName()},id:${myBindDataModel.getAppId()}", Toast.LENGTH_SHORT).show()
+            }
 
             override fun onBindView(
                 position: Int,
@@ -84,9 +89,6 @@ class MainActivity : AppCompatActivity() {
 
                 viewBinding.appName.text = list[position].getAppName()
 
-                viewBinding.root.setOnClickListener {
-                    Toast.makeText(this@MainActivity, "position:$position,name:${list[position].getAppName()}", Toast.LENGTH_SHORT).show()
-                }
             }
         })
     }

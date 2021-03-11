@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
  * @author ChenRui
  * ClassDescription:数据库
  */
-@Database(entities = [DesktopDataTable::class], version = 2, exportSchema = false)
+@Database(entities = [DesktopDataTable::class], version = 3, exportSchema = false)
 abstract class AbsDatabase : RoomDatabase() {
     abstract fun desktopDataDao(): DesktopDataDao
 
@@ -59,9 +59,9 @@ abstract class AbsDatabase : RoomDatabase() {
                 super.onCreate(db)
                 // If you want to keep the data through app restarts,
                 // comment out the following line.
-                INSTANCE?.let { database ->
+                INSTANCE?.let {
                     scope.launch(Dispatchers.IO) {
-                        populateDatabase(database.desktopDataDao())
+                        populateDatabase()
                     }
                 }
             }
@@ -71,7 +71,7 @@ abstract class AbsDatabase : RoomDatabase() {
          * Populate the database in a new coroutine.
          * If you want to start with more words, just add them.
          */
-        suspend fun populateDatabase(desktopDataDao: DesktopDataDao) {
+        fun populateDatabase() {
             // Start the app with a clean database every time.
             // Not needed if you only populate on creation.
             Log.d(TAG, "populateDatabase: ")

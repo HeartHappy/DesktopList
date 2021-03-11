@@ -9,11 +9,13 @@ import com.hearthappy.desktoplist.databinding.ItemAppListBinding
  */
 interface ItemViewListener {
 
-//    fun onSelectedView()
+    //    fun onSelectedView()
 
-//    fun onSelectedMoveView()
+    //    fun onSelectedMoveView()
 
-//    fun onReleaseView()
+    //    fun onReleaseView()
+
+    fun onClickItemView(bindDataModel: IBindDataModel)
 
     fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
 }
