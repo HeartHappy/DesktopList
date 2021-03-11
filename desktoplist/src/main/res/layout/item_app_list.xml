@@ -21,6 +21,8 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:gravity="center"
+        android:paddingStart="@dimen/dp_4"
+        android:paddingEnd="@dimen/dp_4"
         android:singleLine="true"
         android:textColor="#000"
         android:textSize="@dimen/sp_14" />

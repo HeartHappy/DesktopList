@@ -28,6 +28,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
         add(BindDataModel("https://i.loli.net/2019/09/09/tQ9gwTiJMR1bq5s.jpg", "PPP"))
         add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "QQQ"))
         add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "RRR"))
+        add(BindDataModel("https://i.loli.net/2019/09/09/xMSbJNDX3QshWc4.jpg", "RRR1234564668"))
 
         /*add(BindDataModel("http://c.hiphotos.baidu.com/image/pic/item/30adcbef76094b36de8a2fe5a1cc7cd98d109d99.jpg", "SSS"))
         add(BindDataModel("https://i.loli.net/2019/09/09/u5NMgOH8jkEa6Xw.jpg", "TTT"))
