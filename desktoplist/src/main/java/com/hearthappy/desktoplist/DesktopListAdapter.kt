@@ -1,6 +1,7 @@
 package com.hearthappy.desktoplist
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,9 @@ class DesktopListAdapter(
 
 
     override fun createMyViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_app_list, parent, false))
+        return ViewHolder(
+            LayoutInflater.from(context).inflate(R.layout.item_app_list, parent, false)
+        )
     }
 
 
@@ -40,6 +43,7 @@ class DesktopListAdapter(
         if (parent is DesktopListView) {
             holder.bindAppStyle(parent.getAppStyle())
             holder.enableJitter(parent.isDragItemView())
+            holder.enableTextSwitch(parent.isDragItemView(),position)
         }
     }
 
@@ -50,7 +54,8 @@ class DesktopListAdapter(
         fun bindAppStyle(appStyle: AppStyle) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 viewBinding.appIcon.round = when (appStyle) {
-                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() } ?: let { 0f }
+                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() }
+                        ?: let { 0f }
                     is AppStyle.Rounded -> appStyle.radius.toFloat()
                     is AppStyle.NotStyle -> 0f
                 }
@@ -60,5 +65,16 @@ class DesktopListAdapter(
         fun enableJitter(isEnabled: Boolean) {
             viewBinding.appIcon.enableJitter(isEnabled)
         }
+
+        fun enableTextSwitch(isDragItemView: Boolean, position: Int) {
+            viewBinding.appName.enableTextSwitch(!isDragItemView,position)
+            if(isDragItemView){
+                Log.d(TAG, "enableTextSwitch: 禁用:$position")
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "DesktopListAdapter"
     }
 }

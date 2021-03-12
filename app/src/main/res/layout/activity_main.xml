@@ -29,6 +29,11 @@
             android:id="@+id/btnRefresh"
             style="@style/style_navigation"
             android:text="搜索" />
+
+        <TextSwitcher
+            android:id="@+id/ts"
+            android:layout_width="100dp"
+            android:layout_height="match_parent" />
     </androidx.appcompat.widget.Toolbar>
 
     <com.hearthappy.desktoplist.DesktopRefreshLayout

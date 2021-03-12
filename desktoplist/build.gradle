@@ -6,7 +6,15 @@ plugins {
     id 'kotlin-parcelize'
 }
 group = 'com.hearthappy.desktopView'
+
 def roomVersion = "2.2.5"
+
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -76,7 +84,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-
 /*task classesJar(type: Jar) {
     from "$buildDir/intermediates/classes/release"
 }*/
