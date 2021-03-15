@@ -2,15 +2,9 @@ package com.hearthappy.desktoplist
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
-import android.view.View
-import android.view.animation.TranslateAnimation
-import android.widget.TextView
 import android.widget.Toast
-import android.widget.ViewSwitcher
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.hearthappy.appstyle.AppStyle
@@ -47,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 
             searchData()
 
+            showAppId()
+
             /**
              * 参数分别是：1、绑定数据的集合  2、每行显示列数
              */
@@ -58,31 +54,18 @@ class MainActivity : AppCompatActivity() {
                 sfl.isRefreshing = false
                 Toast.makeText(this@MainActivity, "触发刷新了", Toast.LENGTH_SHORT).show()
             }
-            Log.d(TAG, "onCreate: ${ts.height}")
-            val inAnim = TranslateAnimation(0.0f, 0.0f, ts.height.toFloat(), 0.0f)
-            val outAnim = TranslateAnimation(0.0f, 0.0f, 0f, -ts.height.toFloat())
-            ts.setFactory(object : ViewSwitcher.ViewFactory {
-                override fun makeView(): View {
-                    val tv = TextView(this@MainActivity)
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20F)
-                    tv.setTextColor(Color.MAGENTA)
-                    return tv
-                }
-            })
-            next()
         }
     }
 
-    val arr = arrayListOf("111111", "22222", "33333")
-    var arrIndex = 0
-    fun ActivityMainBinding.next() {
-        ts.setText(arr[arrIndex])
-        ts.postDelayed({ next() }, 3000)
-        arrIndex++
-        if (arrIndex == arr.size) {
-            arrIndex = 0
+
+    //设置是否显示appId
+    private fun ActivityMainBinding.showAppId() {
+        btnShowAppId.setOnClickListener {
+            btnShowAppId.isSelected = !btnShowAppId.isSelected
+            dlv.isShowAppId = btnShowAppId.isSelected
         }
     }
+
 
     @SuppressLint("SetTextI18n")
     private fun ActivityMainBinding.updateBtnText() {
@@ -133,14 +116,26 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 list: List<IBindDataModel>,
                 viewBinding: ItemAppListBinding,
+                showAppId: Boolean,
             ) {
+                //显示Icon
                 Glide.with(this@MainActivity).load(list[position].getAppUrl())
                     .placeholder(R.mipmap.ic_launcher).error(
                         android.R.drawable.ic_menu_report_image
                     ).into(viewBinding.appIcon)
-                viewBinding.appName.text = list[position].getAppName()
-                viewBinding.appName.setSubText("子文本:$position", delay =1000)
 
+                //显示id，或应用名称
+                if (showAppId) {
+                    val appId = list[position].getAppId()
+                    if (appId.isBlank()) {
+                        viewBinding.appName.text = list[position].getAppName()
+                    } else {
+                        viewBinding.appName.text = list[position].getAppId()
+                    }
+                } else {
+                    viewBinding.appName.text = list[position].getAppName()
+                }
+//                viewBinding.appName.setSubText("子文本:$position", delay =1000)
             }
         })
     }

@@ -38,8 +38,14 @@ interface IItemViewInteractive : Parcelable {
      * @param position Int
      * @param list List<IBindDataModel>
      * @param viewBinding ItemAppListBinding
+     * @param showAppId 是否显示应用id
      */
-    fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
+    fun onBindView(
+        position: Int,
+        list: List<IBindDataModel>,
+        viewBinding: ItemAppListBinding,
+        showAppId: Boolean
+    )
 
 
 }

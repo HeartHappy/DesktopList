@@ -1,7 +1,6 @@
 package com.hearthappy.desktoplist
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,16 +33,21 @@ class DesktopListAdapter(
 
     override fun onBindMyViewHolder(holder: ViewHolder, position: Int) {
         //视图与数据的绑定交由用户
-        iItemViewInteractive.onBindView(position, list, holder.viewBinding)
-        holder.viewBinding.root.setOnClickListener {
-            iItemViewInteractive.onClick(position, list)
-        }
+
+
+
 
         //切换样式
         if (parent is DesktopListView) {
+            holder.viewBinding.apply {
+                iItemViewInteractive.onBindView(position, list, this,parent.isShowAppId)
+
+                root.setOnClickListener {
+                    iItemViewInteractive.onClick(position, list)
+                }
+            }
             holder.bindAppStyle(parent.getAppStyle())
             holder.enableJitter(parent.isDragItemView())
-            holder.enableTextSwitch(parent.isDragItemView(),position)
         }
     }
 
@@ -64,13 +68,6 @@ class DesktopListAdapter(
 
         fun enableJitter(isEnabled: Boolean) {
             viewBinding.appIcon.enableJitter(isEnabled)
-        }
-
-        fun enableTextSwitch(isDragItemView: Boolean, position: Int) {
-            viewBinding.appName.enableTextSwitch(!isDragItemView,position)
-            if(isDragItemView){
-                Log.d(TAG, "enableTextSwitch: 禁用:$position")
-            }
         }
     }
 

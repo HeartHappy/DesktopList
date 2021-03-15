@@ -15,10 +15,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.IntRange
 import androidx.constraintlayout.utils.widget.ImageFilterView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -61,12 +61,17 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private var fromPagePosition = -1 //选中当前页面position（第几页）
     private var fromAdapterPosition = -1 //选中当前页面适配的position（第几个item）
     private var fromFragmentContent: FragmentContent? = null //选中ItemView来自的Fragment视图
-    private var currentFragmentContent: FragmentContent? = null
+    internal var currentFragmentContent: FragmentContent? = null
     private var firstMoveTime = 0L
     private var floatViewScrollState = FloatViewScrollState.SCROLL_STATE_IDLE
 
     private var itemViewListener: ItemViewListener? = null
     private var appStyle: AppStyle = AppStyle.NotStyle
+    var isShowAppId: Boolean = false //是否显示应用Id，true:显示id，false:显示应用名称
+        set(value) {
+            field = value
+            requestUpdaterViewPagerAdapter(desktopListData)
+        }
 
     //以下三个属性主要解决dispatchTouchEvent事件分发的X、Y与选中View存在偏移问题
     private var isFirstDispatch = false  //是否位按下时的第一次分发
@@ -176,7 +181,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
     private fun requestUpdaterViewPagerAdapter(desktopListData: MutableList<MutableList<IBindDataModel>>) {
         GlobalScope.launch(Dispatchers.Main) {
-            adapter = DesktopAdapter((context as FragmentActivity).supportFragmentManager, desktopListData)
+            adapter = DesktopAdapter(
+                (context as FragmentActivity).supportFragmentManager,
+                desktopListData
+            )
         }
     }
 
@@ -215,15 +223,23 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         val vh = recyclerView.findViewHolderForAdapterPosition(targetIndex)
         val itemView = vh?.itemView
         if (itemView != null) {
-            val linearLayout = itemView as LinearLayout
-            val imageView = linearLayout.getChildAt(0) as ImageView
+            val constraintLayout = itemView as ConstraintLayout
+            val imageView = constraintLayout.getChildAt(0) as ImageView
             val targetViewRect = ViewOperateUtils.findViewLocation(imageView)
-            return if (moveViewRect.intersect(targetViewRect) || moveViewRect.contains(targetViewRect)) {
+            return if (moveViewRect.intersect(targetViewRect) || moveViewRect.contains(
+                    targetViewRect
+                )
+            ) {
                 targetIndex
             } else {
                 tempTargetIndex++
                 if (tempTargetIndex < itemCount) {
-                    findIntersectViewPosition(itemCount, tempTargetIndex, recyclerView, moveViewRect)
+                    findIntersectViewPosition(
+                        itemCount,
+                        tempTargetIndex,
+                        recyclerView,
+                        moveViewRect
+                    )
                 } else {
                     itemCount
                 }
@@ -267,7 +283,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         } else {
             filterDesktopList.clear()
         }
-        val block = desktopList.chunked(singlePageShowCount) { chunk -> filterDesktopList.add(chunk.toMutableList()) }
+        val block =
+            desktopList.chunked(singlePageShowCount) { chunk -> filterDesktopList.add(chunk.toMutableList()) }
         //计算总页数
         totalPage = block.size
         requestUpdaterViewPagerAdapter(filterDesktopList)
@@ -290,7 +307,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         val rowsCount = height / itemHeightSpan
         singlePageShowCount = rowsCount * spanCount
         verticalSpacing = (itemHeightSpan * (precisionRowsCount % rowsCount) / rowsCount / 2)
-        Log.d(TAG, "initializePageProperty: 每页显示:$singlePageShowCount,行数:$rowsCount,height:$height,itemHeight:${resources.getDimensionPixelOffset(R.dimen.dp_105)},精确行数:$precisionRowsCount,垂直偏移:$verticalSpacing")
+        Log.d(
+            TAG,
+            "initializePageProperty: 每页显示:$singlePageShowCount,行数:$rowsCount,height:$height,itemHeight:${
+                resources.getDimensionPixelOffset(R.dimen.dp_105)
+            },精确行数:$precisionRowsCount,垂直偏移:$verticalSpacing"
+        )
     }
 
 
@@ -315,7 +337,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 } else if (localAndRemoteMap.first != localAndRemoteMap.second) {
                     Log.d(TAG, "initializePageData: data sync")
                     //网络数据增加了
-                    val conversionDifferentData = conversionDifferentData(localDataSource, remoteDataSources, localAndRemoteMap.first, localAndRemoteMap.second)
+                    val conversionDifferentData = conversionDifferentData(
+                        localDataSource,
+                        remoteDataSources,
+                        localAndRemoteMap.first,
+                        localAndRemoteMap.second
+                    )
                     if (conversionDifferentData.first) {
                         insetLocalDataSource(dao, conversionDifferentData.second)
                         conversionLocalData(dao.queryByOrientation(orientation.value()))
@@ -341,10 +368,20 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         this.orientation = orientation
         return when (orientation) {
             Orientation.PORTRAIT -> {
-                spanCountIsChange(spanCount, orientation, KEY_PORTRAIT_SPAN_COUNT, KEY_PORTRAIT_SINGLE_SHOW_COUNT)
+                spanCountIsChange(
+                    spanCount,
+                    orientation,
+                    KEY_PORTRAIT_SPAN_COUNT,
+                    KEY_PORTRAIT_SINGLE_SHOW_COUNT
+                )
             }
             Orientation.LANDSCAPE -> {
-                spanCountIsChange(spanCount, orientation, KEY_LANDSCAPE_SPAN_COUNT, KEY_LANDSCAPE_SINGLE_SHOW_COUNT)
+                spanCountIsChange(
+                    spanCount,
+                    orientation,
+                    KEY_LANDSCAPE_SPAN_COUNT,
+                    KEY_LANDSCAPE_SINGLE_SHOW_COUNT
+                )
             }
         }
     }
@@ -402,7 +439,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         context.getSharedPreferences(SP_FILENAME) { sp ->
             val storageSpanCount = sp toInt keySpanCount
             val storageSinglePageShowCount = sp toInt keySinglePageShowCount
-            val isChange = storageSpanCount != 0 && storageSpanCount != spanCount || storageSinglePageShowCount != singlePageShowCount
+            val isChange =
+                storageSpanCount != 0 && storageSpanCount != spanCount || storageSinglePageShowCount != singlePageShowCount
             //            Log.d(TAG, "spanCountIsChange: $orientation,是否更改:$isChange,存储列数：$storageSpanCount,更改为：$spanCount,存储显示个数:$storageSinglePageShowCount,更改为：$singlePageShowCount")
             sp.editApplySaveByName {
                 it.putInt(keySpanCount, spanCount)
@@ -465,10 +503,14 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      */
     private fun conversionRemoteData(dataSources: List<IBindDataModel>) {
         //将集合按照数量分块，最后一块较小
-        val block = dataSources.chunked(singlePageShowCount) { chunk -> desktopListData.add(chunk.toMutableList()) }
+        val block =
+            dataSources.chunked(singlePageShowCount) { chunk -> desktopListData.add(chunk.toMutableList()) }
         //计算总页数
         totalPage = block.size
-        Log.d(TAG, "conversionRemoteData: 网络数据转换成每页数据，并初次写入本地,页数：$totalPage,每页显示个数:$singlePageShowCount")
+        Log.d(
+            TAG,
+            "conversionRemoteData: 网络数据转换成每页数据，并初次写入本地,页数：$totalPage,每页显示个数:$singlePageShowCount"
+        )
         desktopListData.forEachIndexed { index, mutableList ->
             Log.d(TAG, "conversionRemoteData: 当前页数:$index,每页显示数量：${mutableList.size}")
             mutableList.forEachIndexed { i, iBindDataModel ->
@@ -491,7 +533,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             desktopListData.add(dividePageData.toMutableList())
             Log.d(TAG, "conversionLocalData:当前页数: ${group.key},每页显示数量：${dividePageData.size}")
             dividePageData.forEach {
-                Log.d(TAG, "groupBySort conversionLocalData: ${it.title},pagePosition:${it.pageNumber},adapterPosition:${it.pageAdapterPosition},orientation:${it.orientation}")
+                Log.d(
+                    TAG,
+                    "groupBySort conversionLocalData: ${it.title},pagePosition:${it.pageNumber},adapterPosition:${it.pageAdapterPosition},orientation:${it.orientation}"
+                )
             }
         }
     }
@@ -572,7 +617,16 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         for (i in 0 until totalPage) {
             val numberPerPage = desktopListData[i].size
             for (j in 0 until numberPerPage) {
-                dao.insert(DesktopDataTable(title = desktopListData[i][j].getAppName(), url = desktopListData[i][j].getAppUrl(), appKey = desktopListData[i][j].getAppId(), pageNumber = i, pageAdapterPosition = j, orientation = this.orientation.value()))
+                dao.insert(
+                    DesktopDataTable(
+                        title = desktopListData[i][j].getAppName(),
+                        url = desktopListData[i][j].getAppUrl(),
+                        appKey = desktopListData[i][j].getAppId(),
+                        pageNumber = i,
+                        pageAdapterPosition = j,
+                        orientation = this.orientation.value()
+                    )
+                )
             }
         }
     }
@@ -589,8 +643,18 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 //                Log.d(TAG, "executeSyncUpdate number per Page----->: $numberPerPage")
                 for (j in 0 until numberPerPage) {
                     val bindDataModel = desktopListData[i][j]
-                    Log.d(TAG, "executeSyncUpdate: ${bindDataModel.getAppName()},page:$i,position:$j,id:${bindDataModel.getAppId()}")
-                    dao.update(title = bindDataModel.getAppName(), url = bindDataModel.getAppUrl(), appKey = bindDataModel.getAppId(), pageNumber = i, pageAdapterPosition = j, orientation.value())
+                    Log.d(
+                        TAG,
+                        "executeSyncUpdate: ${bindDataModel.getAppName()},page:$i,position:$j,id:${bindDataModel.getAppId()}"
+                    )
+                    dao.update(
+                        title = bindDataModel.getAppName(),
+                        url = bindDataModel.getAppUrl(),
+                        appKey = bindDataModel.getAppId(),
+                        pageNumber = i,
+                        pageAdapterPosition = j,
+                        orientation.value()
+                    )
                 }
             }
         }
@@ -614,7 +678,16 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         var insetIndex = insetPageAdapterIndex
         insetDataList.forEachIndexed { _, insetData ->
             //            Log.d(TAG, "executeSyncInset: sync inset:${insetData.getAppName()}")
-            dao.insert(DesktopDataTable(title = insetData.getAppName(), url = insetData.getAppUrl(), appKey = insetData.getAppId(), pageNumber = insetPageIndex, pageAdapterPosition = insetIndex, orientation = orientation.value()))
+            dao.insert(
+                DesktopDataTable(
+                    title = insetData.getAppName(),
+                    url = insetData.getAppUrl(),
+                    appKey = insetData.getAppId(),
+                    pageNumber = insetPageIndex,
+                    pageAdapterPosition = insetIndex,
+                    orientation = orientation.value()
+                )
+            )
             ++insetIndex
         }
     }
@@ -724,8 +797,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private fun createFloatView(selectView: View?) {
         val frameLayout = getDecorView()
         //将原ImageView属性copy
-        val linearLayout = selectView as LinearLayout
-        val imageView = linearLayout.getChildAt(0) as ImageView
+        val constraintLayout = selectView as ConstraintLayout
+        val imageView = constraintLayout.getChildAt(0) as ImageView
 
         fromItemViewRect = ViewOperateUtils.findViewLocation(imageView)
         fromItemViewRect?.let {
@@ -757,7 +830,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     private fun setFloatViewStyle(tempImageView: ImageFilterView) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             tempImageView.round = when (appStyle) {
-                is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() } ?: let { 0f }
+                is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() }
+                    ?: let { 0f }
                 is AppStyle.Rounded -> (appStyle as AppStyle.Rounded).radius.toFloat()
                 is AppStyle.NotStyle -> 0f
             }
@@ -771,7 +845,8 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @param list List<IBindDataModel>
      */
     private fun onClickItemView(position: Int, list: List<IBindDataModel>) {
-        val filter = desktopDataModel.filter { it.getAppName() == list[position].getAppName() && it.getAppId() == list[position].getAppId() }
+        val filter =
+            desktopDataModel.filter { it.getAppName() == list[position].getAppName() && it.getAppId() == list[position].getAppId() }
         if (filter.isNotEmpty()) {
             itemViewListener?.onClickItemView(filter[0])
         }
@@ -787,8 +862,9 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         position: Int,
         list: List<IBindDataModel>,
         viewBinding: ItemAppListBinding,
+        showAppId: Boolean,
     ) {
-        itemViewListener?.onBindView(position, list, viewBinding)
+        itemViewListener?.onBindView(position, list, viewBinding,showAppId)
     }
 
     /**
@@ -877,7 +953,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         //静止状态下，不存在，则插入
                     } else if (!isImplicitInset() && itemCount < singlePageShowCount && targetIndex != itemCount) {
                         //                    Log.d(TAG, "dispatchTouchEvent:插入目标位置：${targetIndex}")
-                        implicitInset(targetIndex, desktopListData[fromPagePosition][fromAdapterPosition])
+                        implicitInset(
+                            targetIndex,
+                            desktopListData[fromPagePosition][fromAdapterPosition]
+                        )
                     }
                 }
             }
@@ -911,7 +990,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         fromAdapterPosition = -1
                     }, 200)
                 } else {
-                    Log.d(TAG, "onReleaseSelectItemView: request update view failed ,not add fragment to activity")
+                    Log.d(
+                        TAG,
+                        "onReleaseSelectItemView: request update view failed ,not add fragment to activity"
+                    )
                 }
             }
             //            Log.d(TAG, "onReleaseSelectItemView--->remove float View")
@@ -965,9 +1047,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
     ) {
         //        Log.d(TAG, "checkFromPageIsMove--> $fromPosition,fromAdapterPosition:${fromAdapterPosition},targetPosition:$targetIndex")
         if (targetIndex == -1) return
-        val targetViewHolderRect = fc.getRecyclerView().findViewHolderForAdapterPosition(targetIndex)
+        val targetViewHolderRect =
+            fc.getRecyclerView().findViewHolderForAdapterPosition(targetIndex)
         targetViewHolderRect?.itemView?.let {
-            if (ViewOperateUtils.findViewLocation(mfv).intersect(ViewOperateUtils.findViewLocation(it.findViewById(R.id.appIcon)))) {
+            if (ViewOperateUtils.findViewLocation(mfv)
+                    .intersect(ViewOperateUtils.findViewLocation(it.findViewById(R.id.appIcon)))
+            ) {
                 moveFromPosition(fromPosition, targetIndex)
             }
         }
@@ -983,14 +1068,19 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         targetIndex: Int,
     ) {
         if (getImplicitPosition() == -1) return
-        val implicitViewHolder = targetFragment.getRecyclerView().findViewHolderForAdapterPosition(getImplicitPosition())
+        val implicitViewHolder =
+            targetFragment.getRecyclerView().findViewHolderForAdapterPosition(getImplicitPosition())
         implicitViewHolder?.itemView?.let { iv ->
-            val implicitImageViewRect = ViewOperateUtils.findViewLocation(iv.findViewById(R.id.appIcon))
+            val implicitImageViewRect =
+                ViewOperateUtils.findViewLocation(iv.findViewById(R.id.appIcon))
             val intersect = implicitImageViewRect.intersect(ViewOperateUtils.findViewLocation(mfv))
             val contains = implicitImageViewRect.contains(ViewOperateUtils.findViewLocation(mfv))
             if (!intersect && !contains && getImplicitPosition() != targetIndex) {
                 //                Log.d(TAG, "dispatchTouchEvent:当前移动位置与隐式插入View不相交,原位置：${getImplicitPosition()},移动目标位置：${targetIndex}")
-                moveCrossPosition(getImplicitPosition(), if (targetIndex != itemCount) targetIndex else targetIndex - 1)
+                moveCrossPosition(
+                    getImplicitPosition(),
+                    if (targetIndex != itemCount) targetIndex else targetIndex - 1
+                )
             }
         }
     }
@@ -1017,7 +1107,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
         //如果已经存在隐式
         if (it.isImplicitInset()) {
             if (it.getImplicitPositionIsChange()) {
-                moveUpChangeDataSource(targetFragment, it.getImplicitPositionInFirstInset(), targetIndex, currentItem)
+                moveUpChangeDataSource(
+                    targetFragment,
+                    it.getImplicitPositionInFirstInset(),
+                    targetIndex,
+                    currentItem
+                )
             } else {
                 it.notifyDataChanged()
             }
@@ -1179,7 +1274,11 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                         return -1
                     }
                     requestDesktopListRecyclerView(fc) { rv ->
-                        val targetIndex = findIntersectViewPosition(itemCount = ic, recyclerView = rv, moveViewRect = moveViewRect)
+                        val targetIndex = findIntersectViewPosition(
+                            itemCount = ic,
+                            recyclerView = rv,
+                            moveViewRect = moveViewRect
+                        )
                         //                        Log.d(TAG, "getTargetIndexEfficient:targetIndex: $targetIndex,itemCount:$ic")
                         if (targetIndex == ic) {
                             return ic
@@ -1231,7 +1330,10 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
      * @return
      */
     @Suppress("DEPRECATION")
-    internal inner class DesktopAdapter(fm: FragmentManager, private val desktopList: MutableList<MutableList<IBindDataModel>>) : FragmentStatePagerAdapter(fm) {
+    internal inner class DesktopAdapter(
+        fm: FragmentManager,
+        private val desktopList: MutableList<MutableList<IBindDataModel>>
+    ) : FragmentStatePagerAdapter(fm) {
 
         override fun getItem(position: Int): Fragment {
             var fromPageAdapterPosition = -1
@@ -1241,69 +1343,78 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
             }
             //            Log.d(TAG, "getItem: 创建FragmentContent:$position,页数:${desktopListData.size},每页显示数量:${desktopListData[position].size}")
             //创建时拿取数据
-            return FragmentContent.newInstance(position, fromPageAdapterPosition, desktopList[position], spanCount, verticalSpacing, appStyle, object : IItemViewInteractive {
+            return FragmentContent.newInstance(
+                position,
+                fromPageAdapterPosition,
+                desktopList[position],
+                spanCount,
+                verticalSpacing,
+                appStyle,
+                object : IItemViewInteractive {
 
-                override fun selectViewRect(
-                    selectView: View?,
-                    adapterPosition: Int,
-                    fragmentContent: FragmentContent,
-                ) {
-                    onSelectItemView(selectView, adapterPosition, fragmentContent)
-                    //                    Log.d(TAG, "selectItemView:current page:${currentItem},interface result： $selectView,select position:$adapterPosition")
-                }
+                    override fun selectViewRect(
+                        selectView: View?,
+                        adapterPosition: Int,
+                        fragmentContent: FragmentContent,
+                    ) {
+                        onSelectItemView(selectView, adapterPosition, fragmentContent)
+                        //                    Log.d(TAG, "selectItemView:current page:${currentItem},interface result： $selectView,select position:$adapterPosition")
+                    }
 
-                override fun onClick(position: Int, list: List<IBindDataModel>) {
-                    onClickItemView(position, list)
-                }
-
-
-                override fun onLongClick(position: Int, list: List<IBindDataModel>) {
-                }
-
-                override fun onBindView(
-                    position: Int,
-                    list: List<IBindDataModel>,
-                    viewBinding: ItemAppListBinding,
-                ) {
-                    onBindItemView(position, list, viewBinding)
-                }
-
-                override fun describeContents(): Int {
-                    return 0
-                }
-
-                override fun writeToParcel(dest: Parcel?, flags: Int) {
-                }
-            }, object : ILifeCycle {
-
-                override fun onCreate(position: Int) {
-                }
-
-                override fun onCreateView(position: Int) {
-                }
-
-                override fun onViewCreated(position: Int) {
-                }
-
-                override fun onResume(position: Int) {
-
-                }
-
-                override fun onDestroyView(position: Int) {
-                    //                    Log.d(ILifeCycle_TAG, "onDestroyView: $position")
-                }
-
-                override fun onDestroy(position: Int) {
-                }
-
-                override fun onUserVisibleHint(visibleToUser: Boolean, position: Int) {
-                }
+                    override fun onClick(position: Int, list: List<IBindDataModel>) {
+                        onClickItemView(position, list)
+                    }
 
 
-                override fun describeContents(): Int = 0
+                    override fun onLongClick(position: Int, list: List<IBindDataModel>) {
+                    }
 
-                override fun writeToParcel(dest: Parcel?, flags: Int) {}
-            })
+                    override fun onBindView(
+                        position: Int,
+                        list: List<IBindDataModel>,
+                        viewBinding: ItemAppListBinding,
+                        showAppId: Boolean,
+                    ) {
+                        onBindItemView(position, list, viewBinding,showAppId)
+                    }
+
+                    override fun describeContents(): Int {
+                        return 0
+                    }
+
+                    override fun writeToParcel(dest: Parcel?, flags: Int) {
+                    }
+                },
+                object : ILifeCycle {
+
+                    override fun onCreate(position: Int) {
+                    }
+
+                    override fun onCreateView(position: Int) {
+                    }
+
+                    override fun onViewCreated(position: Int) {
+                    }
+
+                    override fun onResume(position: Int) {
+
+                    }
+
+                    override fun onDestroyView(position: Int) {
+                        //                    Log.d(ILifeCycle_TAG, "onDestroyView: $position")
+                    }
+
+                    override fun onDestroy(position: Int) {
+                    }
+
+                    override fun onUserVisibleHint(visibleToUser: Boolean, position: Int) {
+                    }
+
+
+                    override fun describeContents(): Int = 0
+
+                    override fun writeToParcel(dest: Parcel?, flags: Int) {}
+                })
         }
 
         override fun getCount(): Int {

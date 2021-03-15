@@ -7,7 +7,7 @@ plugins {
 }
 group = 'com.hearthappy.desktopView'
 
-def roomVersion = "2.2.5"
+def roomVersion = "2.2.6"
 
 allprojects {
     repositories {
@@ -66,6 +66,8 @@ dependencies {
 
 //    implementation "com.facebook.stetho:stetho:1.4.2"
     implementation 'com.hi-dhl:binding:1.0.7'
+
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
 
 
 }

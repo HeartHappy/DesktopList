@@ -17,5 +17,10 @@ interface ItemViewListener {
 
     fun onClickItemView(bindDataModel: IBindDataModel)
 
-    fun onBindView(position: Int, list: List<IBindDataModel>, viewBinding: ItemAppListBinding)
+    fun onBindView(
+        position: Int,
+        list: List<IBindDataModel>,
+        viewBinding: ItemAppListBinding,
+        showAppId: Boolean
+    )
 }

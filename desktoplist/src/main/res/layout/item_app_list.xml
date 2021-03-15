@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/dp_105"
-    android:gravity="center"
-    android:orientation="vertical"
     tools:ignore="UseCompoundDrawables">
 
     <com.hearthappy.desktoplist.weiget.JitterImageView
@@ -13,9 +12,14 @@
         android:layout_height="@dimen/dp_52"
         android:layout_marginBottom="@dimen/dp_4"
         android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/appName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
         tools:ignore="ContentDescription" />
 
-    <com.hearthappy.desktoplist.weiget.MultipleTextView
+    <TextView
         android:id="@+id/appName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,5 +29,7 @@
         android:paddingEnd="@dimen/dp_4"
         android:singleLine="true"
         android:textColor="#000"
-        android:textSize="@dimen/sp_14" />
-</LinearLayout>
+        android:textSize="@dimen/sp_14"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appIcon" />
+</androidx.constraintlayout.widget.ConstraintLayout>
