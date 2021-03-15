@@ -1285,6 +1285,7 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
 
                 override fun writeToParcel(dest: Parcel?, flags: Int) {
                 }
+
             }, object : ILifeCycle {
 
                 override fun onCreate(position: Int) {
@@ -1310,10 +1311,12 @@ class DesktopListView(context: Context, attrs: AttributeSet?) : ViewPager(contex
                 override fun onUserVisibleHint(visibleToUser: Boolean, position: Int) {
                 }
 
+                override fun describeContents(): Int {
+                    return 0
+                }
 
-                override fun describeContents(): Int = 0
-
-                override fun writeToParcel(dest: Parcel?, flags: Int) {}
+                override fun writeToParcel(dest: Parcel?, flags: Int) {
+                }
             })
         }
 
