@@ -32,15 +32,12 @@ class DesktopListAdapter(
 
 
     override fun onBindMyViewHolder(holder: ViewHolder, position: Int) {
-        //视图与数据的绑定交由用户
-
-
-
 
         //切换样式
         if (parent is DesktopListView) {
             holder.viewBinding.apply {
-                iItemViewInteractive.onBindView(position, list, this,parent.isShowAppId)
+                //视图与数据的绑定交由用户
+                iItemViewInteractive.onBindView(position, list, holder.viewBinding,parent.isShowAppId)
 
                 root.setOnClickListener {
                     iItemViewInteractive.onClick(position, list)
@@ -69,9 +66,5 @@ class DesktopListAdapter(
         fun enableJitter(isEnabled: Boolean) {
             viewBinding.appIcon.enableJitter(isEnabled)
         }
-    }
-
-    companion object {
-        private const val TAG = "DesktopListAdapter"
     }
 }
