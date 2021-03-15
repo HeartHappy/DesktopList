@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
     private fun ActivityMainBinding.showAppId() {
         btnShowAppId.setOnClickListener {
             btnShowAppId.isSelected = !btnShowAppId.isSelected
+            btnShowAppId.text = if (btnShowAppId.isSelected) "显示应用名称" else "显示应用id"
             dlv.isShowAppId = btnShowAppId.isSelected
         }
     }
