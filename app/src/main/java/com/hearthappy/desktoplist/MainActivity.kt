@@ -67,8 +67,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    @SuppressLint("SetTextI18n")
-    private fun ActivityMainBinding.updateBtnText() {
+    @SuppressLint("SetTextI18n") private fun ActivityMainBinding.updateBtnText() {
         btnRefresh.text = "搜索${searchStr[strIndex]}"
     }
 
@@ -81,13 +80,14 @@ class MainActivity : AppCompatActivity() {
         btnRefresh.setOnClickListener {
             if (strIndex < searchStr.size) {
                 val filter = desktopDataModel.dataSources().filter {
-                    it.getAppName().contains(
-                        searchStr[strIndex]
-                    )
+                    it.getAppName().contains(searchStr[strIndex])
                 }
                 filter.forEach { Log.d(TAG, "updateData: ${it.getAppName()}") }
                 dlv.notifyDesktopDataChange(filter)
                 strIndex++
+                if (strIndex >= searchStr.size) {
+                    strIndex = 0
+                }
                 updateBtnText()
             } else {
                 dlv.restoreDesktopData()
@@ -104,25 +104,17 @@ class MainActivity : AppCompatActivity() {
         dlv.setDesktopAdapterListener(object : ItemViewListener {
             override fun onClickItemView(bindDataModel: IBindDataModel) {
                 val myBindDataModel = bindDataModel as BindDataModel
-                Toast.makeText(
-                    this@MainActivity,
-                    "name:${myBindDataModel.getAppName()},id:${myBindDataModel.getAppId()}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@MainActivity, "name:${myBindDataModel.getAppName()},id:${myBindDataModel.getAppId()}", Toast.LENGTH_SHORT).show()
             }
 
-            @SuppressLint("SetTextI18n")
-            override fun onBindView(
+            @SuppressLint("SetTextI18n") override fun onBindView(
                 position: Int,
                 list: List<IBindDataModel>,
                 viewBinding: ItemAppListBinding,
                 showAppId: Boolean,
             ) {
                 //显示Icon
-                Glide.with(this@MainActivity).load(list[position].getAppUrl())
-                    .placeholder(R.mipmap.ic_launcher).error(
-                        android.R.drawable.ic_menu_report_image
-                    ).into(viewBinding.appIcon)
+                Glide.with(this@MainActivity).load(list[position].getAppUrl()).placeholder(R.mipmap.ic_launcher).error(android.R.drawable.ic_menu_report_image).into(viewBinding.appIcon)
 
                 //显示id，或应用名称
                 if (showAppId) {
@@ -135,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     viewBinding.appName.text = list[position].getAppName()
                 }
-//                viewBinding.appName.setSubText("子文本:$position", delay =1000)
+                //                viewBinding.appName.setSubText("子文本:$position", delay =1000)
             }
         })
     }
@@ -148,12 +140,9 @@ class MainActivity : AppCompatActivity() {
     private fun ActivityMainBinding.setDesktopTransform() {
         btnSwitchTransformPage.setOnClickListener {
             when (++transformPagerIndex % 3) {
-                1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill)
-                    .notifyChangeStyle()
-                2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp)
-                    .notifyChangeStyle()
-                else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate)
-                    .notifyChangeStyle()
+                1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill).notifyChangeStyle()
+                2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp).notifyChangeStyle()
+                else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate).notifyChangeStyle()
             }
             Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
         }
