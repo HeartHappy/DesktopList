@@ -1,11 +1,11 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'com.github.dcendents.android-maven'
+//    id 'com.github.dcendents.android-maven'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
+    id 'maven-publish'
 }
-group = 'com.hearthappy.desktopView'
 
 def roomVersion = "2.2.6"
 
@@ -72,26 +72,28 @@ dependencies {
 
 }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.sourceFiles
-}
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
 
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
+                // You can then customize attributes of the publication as shown below.
+                groupId = 'com.hearthappy.desktopView'
+                artifactId = 'desktopView'
+                version = '1.0'
+            }
+            // Creates a Maven publication called “debug”.
+            debug(MavenPublication) {
+                // Applies the component for the debug build variant.
+                from components.debug
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-/*task classesJar(type: Jar) {
-    from "$buildDir/intermediates/classes/release"
-}*/
-
-artifacts {
-//    archives classesJar
-    archives javadocJar
-    archives sourcesJar
+                groupId = 'com.hearthappy.desktopView'
+                artifactId = 'desktopView-debug'
+                version = '1.0'
+            }
+        }
+    }
 }
