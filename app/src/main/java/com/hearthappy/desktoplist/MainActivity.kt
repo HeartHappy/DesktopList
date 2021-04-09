@@ -1,6 +1,7 @@
 package com.hearthappy.desktoplist
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -47,7 +48,6 @@ class MainActivity : AppCompatActivity() {
              * 参数分别是：1、绑定数据的集合  2、每行显示列数
              */
             dlv.init(desktopList = desktopDataModel.dataSources(), 4)
-
             setDesktopAdapterListener()
             sfl.setOnRefreshListener {
                 dlv.init(desktopList = desktopDataModel.dataSources(), 4)
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         btnShowAppId.setOnClickListener {
             btnShowAppId.isSelected = !btnShowAppId.isSelected
             btnShowAppId.text = if (btnShowAppId.isSelected) "显示应用名称" else "显示应用id"
-            dlv.isShowAppId = btnShowAppId.isSelected
+            dlv.isShowAppId = true
         }
     }
 
@@ -106,6 +106,7 @@ class MainActivity : AppCompatActivity() {
             override fun onClickItemView(bindDataModel: IBindDataModel) {
                 val myBindDataModel = bindDataModel as BindDataModel
                 Toast.makeText(this@MainActivity, "name:${myBindDataModel.getAppName()},id:${myBindDataModel.getAppId()}", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this@MainActivity, TwoActivity::class.java))
             }
 
             @SuppressLint("SetTextI18n") override fun onBindView(
