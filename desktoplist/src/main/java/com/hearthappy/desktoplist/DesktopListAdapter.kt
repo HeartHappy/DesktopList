@@ -2,14 +2,12 @@ package com.hearthappy.desktoplist
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
 import androidx.recyclerview.widget.RecyclerView
 import com.hearthappy.appstyle.AppStyle
 import com.hearthappy.desktoplist.databinding.ItemAppListBinding
 import com.hearthappy.interfaces.IBindDataModel
-import com.hi.dhl.binding.viewbind
 
 /**
  * Created Date 2020/12/31.
@@ -25,8 +23,9 @@ class DesktopListAdapter(
 
 
     override fun createMyViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val viewBinding = ItemAppListBinding.inflate(LayoutInflater.from(context), parent, false)
         return ViewHolder(
-            LayoutInflater.from(context).inflate(R.layout.item_app_list, parent, false)
+            viewBinding
         )
     }
 
@@ -35,9 +34,10 @@ class DesktopListAdapter(
 
         //切换样式
         if (parent is DesktopListView) {
-            holder.viewBinding.apply {
-                //视图与数据的绑定交由用户
-                iItemViewInteractive.onBindView(position, list, holder.viewBinding,parent.isShowAppId)
+            holder.viewBinding.apply { //视图与数据的绑定交由用户
+                iItemViewInteractive.onBindView(
+                    position, list, holder.viewBinding, parent.isShowAppId
+                )
 
                 root.setOnClickListener {
                     iItemViewInteractive.onClick(position, list)
@@ -49,14 +49,13 @@ class DesktopListAdapter(
     }
 
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val viewBinding: ItemAppListBinding by viewbind()
+    inner class ViewHolder(val viewBinding: ItemAppListBinding) :
+        RecyclerView.ViewHolder(viewBinding.root) {
 
         fun bindAppStyle(appStyle: AppStyle) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 viewBinding.appIcon.round = when (appStyle) {
-                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() }
-                        ?: let { 0f }
+                    is AppStyle.Circle -> context?.let { (it.resources.getDimensionPixelSize(R.dimen.dp_52) / 2).toFloat() } ?: let { 0f }
                     is AppStyle.Rounded -> appStyle.radius.toFloat()
                     is AppStyle.NotStyle -> 0f
                 }

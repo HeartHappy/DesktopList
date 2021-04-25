@@ -45,7 +45,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
-
+//    implementation 'com.hi-dhl:binding:1.0.7'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 //    implementation 'com.github.paradoxie:AutoVerticalTextview:0.1'
 

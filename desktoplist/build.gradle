@@ -5,7 +5,7 @@ plugins {
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
 }
-group = 'com.hearthappy.desktopView'
+group = 'com.hearthappy.desktoplist'
 
 def roomVersion = "2.2.6"
 
@@ -69,7 +69,6 @@ dependencies {
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
 //    implementation "com.facebook.stetho:stetho:1.4.2"
-    implementation 'com.hi-dhl:binding:1.0.7'
 
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
 
