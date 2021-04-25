@@ -10,7 +10,7 @@ import com.hearthappy.interfaces.IBindDataModel
  * ClassDescription:pageNumber存储的是页面的索引（0~3页，说明有4页）
  */
 @Entity(tableName = "DesktopDataTable") @kotlinx.parcelize.Parcelize
-class DesktopDataTable(@PrimaryKey(autoGenerate = true) val id: Long = 0, val title: String, val url: String, val appKey: String, val pageNumber: Int, val pageAdapterPosition: Int, val orientation: Int) : IBindDataModel {
+class DesktopDataTable(@PrimaryKey(autoGenerate = true) val id: Long = 0, val title: String, val url: String, val appKey: String, val pageNumber: Int, val pageAdapterPosition: Int, val orientation: Int,val userKey:String) : IBindDataModel {
     override fun getAppUrl(): String {
         return url
     }
