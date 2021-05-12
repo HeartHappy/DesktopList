@@ -89,9 +89,9 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-/*task classesJar(type: Jar) {
+task classesJar(type: Jar) {
     from "$buildDir/intermediates/classes/release"
-}*/
+}
 
 artifacts {
 //    archives classesJar

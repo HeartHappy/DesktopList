@@ -45,10 +45,10 @@ class MainActivity : AppCompatActivity() {
             /**
              * 参数分别是：1、绑定数据的集合  2、每行显示列数
              */
-            dlv.init(desktopList = desktopDataModel.dataSources(), 4)
+            desktopView.init(desktopList = desktopDataModel.dataSources(), 4)
             setDesktopAdapterListener()
             sfl.setOnRefreshListener {
-                dlv.init(desktopList = desktopDataModel.dataSources(), 4)
+                desktopView.init(desktopList = desktopDataModel.dataSources(), 4)
                 sfl.isRefreshing = false
                 Toast.makeText(this@MainActivity, "触发刷新了", Toast.LENGTH_SHORT).show()
             }
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         btnShowAppId.setOnClickListener {
             btnShowAppId.isSelected = !btnShowAppId.isSelected
             btnShowAppId.text = if (btnShowAppId.isSelected) "显示应用名称" else "显示应用id"
-            dlv.isShowAppId = true
+            desktopView.isShowAppId = true
         }
     }
 
@@ -82,14 +82,14 @@ class MainActivity : AppCompatActivity() {
                     it.getAppName().contains(searchStr[strIndex])
                 }
                 filter.forEach { Log.d(TAG, "updateData: ${it.getAppName()}") }
-                dlv.notifyDesktopDataChange(filter)
+                desktopView.notifyDesktopDataChange(filter)
                 strIndex++
                 if (strIndex >= searchStr.size) {
                     strIndex = 0
                 }
                 updateBtnText()
             } else {
-                dlv.restoreDesktopData()
+                desktopView.restoreDesktopData()
             }
         }
     }
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
      * @receiver ActivityMainBinding
      */
     private fun ActivityMainBinding.setDesktopAdapterListener() {
-        dlv.setDesktopAdapterListener(object : ItemViewListener {
+        desktopView.setDesktopAdapterListener(object : ItemViewListener {
             override fun onClickItemView(bindDataModel: IBindDataModel) {
                 val myBindDataModel = bindDataModel as BindDataModel
                 Toast.makeText(
@@ -110,6 +110,14 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
 
+
+            /**
+             *
+             * @param position Int 每页的索引
+             * @param list List<IBindDataModel> 每页的数据
+             * @param viewBinding ItemAppListBinding 你的视图View
+             * @param showAppId Boolean 是否显示AppId(true:显示appId，false:显示appName) 默认为false
+             */
             @SuppressLint("SetTextI18n") override fun onBindView(
                 position: Int,
                 list: List<IBindDataModel>,
@@ -130,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 } else {
                     viewBinding.appName.text = list[position].getAppName()
-                } //                viewBinding.appName.setSubText("子文本:$position", delay =1000)
+                }
             }
         })
     }
@@ -143,11 +151,11 @@ class MainActivity : AppCompatActivity() {
     private fun ActivityMainBinding.setDesktopTransform() {
         btnSwitchTransformPage.setOnClickListener {
             when (++transformPagerIndex % 3) {
-                1 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill)
+                1 -> desktopView.setTransformAnimation(PagerTransformer.AnimSpecies.Windmill)
                     .notifyChangeStyle()
-                2 -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp)
+                2 -> desktopView.setTransformAnimation(PagerTransformer.AnimSpecies.FloatUp)
                     .notifyChangeStyle()
-                else -> dlv.setTransformAnimation(PagerTransformer.AnimSpecies.Translate)
+                else -> desktopView.setTransformAnimation(PagerTransformer.AnimSpecies.Translate)
                     .notifyChangeStyle()
             }
             Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
@@ -162,9 +170,9 @@ class MainActivity : AppCompatActivity() {
     private fun ActivityMainBinding.setAppStyle() {
         btnSwitchAppStyle.setOnClickListener {
             when (++styleIndex % 3) {
-                1 -> dlv.setAppStyle(AppStyle.Rounded(24)).notifyChangeStyle()
-                2 -> dlv.setAppStyle(AppStyle.Circle).notifyChangeStyle()
-                else -> dlv.setAppStyle(AppStyle.NotStyle).notifyChangeStyle()
+                1 -> desktopView.setAppStyle(AppStyle.Rounded(24)).notifyChangeStyle()
+                2 -> desktopView.setAppStyle(AppStyle.Circle).notifyChangeStyle()
+                else -> desktopView.setAppStyle(AppStyle.NotStyle).notifyChangeStyle()
             }
             Toast.makeText(this@MainActivity, "切换成功", Toast.LENGTH_SHORT).show()
         }
@@ -180,10 +188,10 @@ class MainActivity : AppCompatActivity() {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Log.d(TAG, "onConfigurationChanged: 竖屏")
-            viewBinding.dlv.init(desktopList = desktopDataModel.dataSources(), 4)
+            viewBinding.desktopView.init(desktopList = desktopDataModel.dataSources(), 4)
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Log.d(TAG, "onConfigurationChanged: 横屏")
-            viewBinding.dlv.init(desktopList = desktopDataModel.dataSources(), 6)
+            viewBinding.desktopView.init(desktopList = desktopDataModel.dataSources(), 6)
         }
     }
 

@@ -24,7 +24,7 @@ public class ComputerUtils {
      *
      * @param allCount  总数量
      * @param showCount 每页显示多少数量
-     * @return
+     * @return 总页数
      */
     public static int getAllPage(int allCount, int showCount) {
         return (allCount % showCount) != 0 ? (allCount / showCount) + 1 : (allCount / showCount);
@@ -36,7 +36,6 @@ public class ComputerUtils {
      *
      * @param source 源集合
      * @param n      拆分后的集合的个数
-     * @param <T>
      * @return 拆分的集合集
      */
     public static <T> List<List<T>> averageAssign(List<T> source, int n) {

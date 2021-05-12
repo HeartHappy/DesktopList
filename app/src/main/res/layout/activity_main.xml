@@ -48,7 +48,7 @@
         android:layout_height="match_parent">
 
         <com.hearthappy.desktoplist.DesktopListView
-            android:id="@+id/dlv"
+            android:id="@+id/desktopView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </com.hearthappy.desktoplist.DesktopRefreshLayout>

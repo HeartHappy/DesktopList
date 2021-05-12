@@ -1,13 +1,11 @@
 package com.hearthappy.desktoplist
 
-import com.hearthappy.interfaces.IDesktopDataModel
-
 /**
  * Created Date 2021/1/4.
  * @author ChenRui
  * ClassDescription:数据类
  */
-class DesktopDataModel : IDesktopDataModel<BindDataModel> {
+class DesktopDataModel {
     private val dataSources = ArrayList<BindDataModel>().apply {
         add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg", "AAA", "key1"))
         add(BindDataModel("http://e.hiphotos.baidu.com/image/pic/item/a1ec08fa513d2697e542494057fbb2fb4316d81e.jpg", "AAA", "key2"))
@@ -81,7 +79,7 @@ class DesktopDataModel : IDesktopDataModel<BindDataModel> {
     }
 
 
-    override fun dataSources(): List<BindDataModel> {
+    fun dataSources(): List<BindDataModel> {
         return dataSources
     }
 
