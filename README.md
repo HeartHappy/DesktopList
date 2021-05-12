@@ -1,3 +1,7 @@
+##### 效果
+![效果图](https://github.com/HeartHappy/DesktopList/blob/master/DesktopView.gif)
+
+
 ##### 1、项目gradle
 ```
 repositories {
