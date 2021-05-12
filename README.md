@@ -1,5 +1,5 @@
 ##### 效果图
-<div align=center><img src="https://github.com/HeartHappy/DesktopList/blob/master/DesktopView.gif" width="500"/></div>
+<div align=center><img src="https://github.com/HeartHappy/DesktopList/blob/master/DesktopView.gif" width="240"/></div>
 
 
 ##### 1、项目gradle
