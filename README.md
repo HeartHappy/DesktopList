@@ -1,3 +1,7 @@
+##### 效果图（由于gif在Github上实时预览存在卡顿，建议将gif下载至本地，拖拽至浏览器预览）
+<div align=center><img src="https://github.com/HeartHappy/DesktopList/blob/master/DesktopView.gif" width="240"/></div>
+
+
 ##### 1、项目gradle
 ```
 repositories {
